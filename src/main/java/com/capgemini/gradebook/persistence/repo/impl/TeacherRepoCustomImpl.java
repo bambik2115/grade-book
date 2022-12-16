@@ -1,12 +1,11 @@
 package com.capgemini.gradebook.persistence.repo.impl;
 
-import java.util.List;
+import com.capgemini.gradebook.persistence.entity.TeacherEntity;
+import com.capgemini.gradebook.persistence.repo.custom.TeacherRepoCustom;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import com.capgemini.gradebook.persistence.entity.TeacherEntity;
-import com.capgemini.gradebook.persistence.repo.TeacherRepoCustom;
+import java.util.List;
 
 public class TeacherRepoCustomImpl implements TeacherRepoCustom {
 

@@ -1,20 +1,15 @@
 package com.capgemini.gradebook.controller;
 
-import java.util.List;
-
+import com.capgemini.gradebook.domain.SubjectEto;
+import com.capgemini.gradebook.domain.TeacherEto;
+import com.capgemini.gradebook.service.SubjectService;
+import com.capgemini.gradebook.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.capgemini.gradebook.domain.TeacherEto;
-import com.capgemini.gradebook.service.TeacherService;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is an example how to write some REST endpoints
@@ -24,18 +19,24 @@ import com.capgemini.gradebook.service.TeacherService;
 public class TeacherRestController {
 
   private final TeacherService teacherService;
+  private final SubjectService subjectService;
 
   @Autowired
-  public TeacherRestController(final TeacherService teacherService) {
+  public TeacherRestController(final TeacherService teacherService, final SubjectService subjectService) {
 
     this.teacherService = teacherService;
+    this.subjectService = subjectService;
   }
 
   @GetMapping("/teachers")
-  public ResponseEntity<List<TeacherEto>> findAllTeachers() {
+  public List<TeacherEto> findAllTeachers() {
 
-    final List<TeacherEto> allTeachers = this.teacherService.findAllTeachers();
-    return ResponseEntity.ok().body(allTeachers);
+    return this.teacherService.findAllTeachers();
+  }
+
+  @GetMapping("/teacherSubjectList/{id}")
+  public List<String> getAllTeacherSubjectNames(@PathVariable("id") final Long id) {
+    return this.teacherService.getSubjects(id);
   }
 
   @GetMapping("/teachers/{id}")
@@ -52,25 +53,24 @@ public class TeacherRestController {
     return ResponseEntity.ok().body(teachers);
   }
 
+
   @PostMapping("/teachers")
   public TeacherEto addTeacher(@RequestBody TeacherEto newTeacher) {
     //TODO IMPLEMENT: Post should always create a new entry in database. Add a new SERVICE method that ensures by
     // either throwing an exception if ID is present, or removing the given ID from ETO before save. Currently, this
-    // method  may also be used to update existing entities
-    return teacherService.save(newTeacher);
+    // method  may also be used to update existing entities (DONE)
+    return teacherService.createNew(newTeacher);
   }
 
-  @PutMapping("/teachers/{id}")
-  TeacherEto upsertEmployee(@RequestBody TeacherEto teacher) {
-
-    //dev note: you can ignore the lack of createdDate and updateDate on resulting object, it will exists in database
-    //its just not "available" during the return by update; if you want, you can try to fix it
-    return teacherService.save(teacher);
+  @PatchMapping("/teachers/{id}")
+  TeacherEto updatePartially(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
+    return teacherService.partialUpdate(id, updateInfo);
   }
+
 
   @DeleteMapping("/teachers/{id}")
-  void deleteEmployee(@PathVariable Long id) {
-    teacherService.delete(id);
+  void deleteTeacher(@PathVariable Long id, @RequestBody SubjectEto newTeacherId) {
+    teacherService.delete(id, newTeacherId.getTeacherEntityId());
   }
 
 }

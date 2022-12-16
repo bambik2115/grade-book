@@ -3,6 +3,7 @@ package com.capgemini.gradebook.service;
 import com.capgemini.gradebook.domain.TeacherEto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TeacherService {
 
@@ -10,9 +11,13 @@ public interface TeacherService {
 
 	List<TeacherEto> findTeacherByLastName(final String lastname) ;
 
+	List<String> getSubjects(Long id);
+
 	TeacherEto findTeacherById(Long id);
 
-	TeacherEto save(TeacherEto newTeacher);
+	TeacherEto partialUpdate(Long id, Map<String, Object> updateInfo);
 
-	void delete(Long id);
+	TeacherEto createNew(TeacherEto newTeacher);
+
+	void delete(Long id, Long newTeacherId);
 }

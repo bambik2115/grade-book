@@ -1,10 +1,10 @@
 package com.capgemini.gradebook.domain.mapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.capgemini.gradebook.domain.TeacherEto;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class TeacherMapper {
 
