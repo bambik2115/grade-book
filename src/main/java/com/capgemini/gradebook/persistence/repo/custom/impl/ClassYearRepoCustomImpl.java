@@ -1,4 +1,4 @@
-package com.capgemini.gradebook.persistence.repo.impl;
+package com.capgemini.gradebook.persistence.repo.custom.impl;
 
 import com.capgemini.gradebook.persistence.repo.custom.ClassYearRepoCustom;
 

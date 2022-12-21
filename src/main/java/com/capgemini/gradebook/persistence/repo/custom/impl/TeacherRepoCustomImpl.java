@@ -1,4 +1,4 @@
-package com.capgemini.gradebook.persistence.repo.impl;
+package com.capgemini.gradebook.persistence.repo.custom.impl;
 
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
 import com.capgemini.gradebook.persistence.repo.custom.TeacherRepoCustom;

@@ -30,7 +30,7 @@ public class SubjectEntity extends AbstractEntity {
 
   public void setName() {
 
-    this.name = this.subjectType + this.classYear.getClassYear();
+    this.name = this.subjectType + "_" + this.classYear.getClassLevel() + this.classYear.getClassName();
 
   }
 

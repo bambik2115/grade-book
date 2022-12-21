@@ -1,17 +1,28 @@
 package com.capgemini.gradebook.domain;
 
+import com.capgemini.gradebook.persistence.entity.GradeType;
+import org.hibernate.validator.constraints.Range;
+
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class GradeEto extends AbstractEto {
 
     @NotNull
+    @Range(min = 1, max = 6, message = "Grade value must be between 1 and 6")
     private Integer value;
 
-    @NotNull
-    private Double weight;
+    @Range(min = 1, max = 6, message = "Grade weight must be between 1 and 6")
+    private BigDecimal weight;
 
-    private String gradeType;
+    @Enumerated(EnumType.STRING)
+    private GradeType gradeType;
 
     private String comment;
 
@@ -34,19 +45,19 @@ public class GradeEto extends AbstractEto {
         this.value = value;
     }
 
-    public Double getWeight() {
+    public BigDecimal getWeight() {
         return this.weight;
     }
 
-    public void setWeight(Double weight) {
+    public void setWeight(BigDecimal weight) {
         this.weight = weight;
     }
 
-    public String getGradeType() {
+    public GradeType getGradeType() {
         return this.gradeType;
     }
 
-    public void setGradeType(String gradeType) {
+    public void setGradeType(GradeType gradeType) {
         this.gradeType = gradeType;
     }
 

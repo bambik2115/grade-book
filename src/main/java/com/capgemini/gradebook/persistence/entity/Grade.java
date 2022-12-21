@@ -1,9 +1,9 @@
 package com.capgemini.gradebook.persistence.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import org.hibernate.annotations.ColumnDefault;
+
+import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,9 +13,11 @@ public class Grade extends AbstractEntity {
 
     private Integer value;
 
-    private Double weight;
+    @Column(precision = 3, scale = 2)
+    private BigDecimal weight;
 
-    private String gradeType;
+    @Enumerated(EnumType.STRING)
+    private GradeType gradeType;
 
     private String comment;
 
@@ -30,6 +32,12 @@ public class Grade extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private StudentEntity studentEntity;
 
+    @PrePersist
+    void preInsert() {
+        if (this.weight == null)
+            this.weight = new BigDecimal(1.00);
+    }
+
     public Integer getValue() {
         return this.value;
     }
@@ -38,19 +46,19 @@ public class Grade extends AbstractEntity {
         this.value = value;
     }
 
-    public Double getWeight() {
+    public BigDecimal getWeight() {
         return this.weight;
     }
 
-    public void setWeight(Double weight) {
+    public void setWeight(BigDecimal weight) {
         this.weight = weight;
     }
 
-    public String getGradeType() {
+    public GradeType getGradeType() {
         return this.gradeType;
     }
 
-    public void setGradeType(String gradeType) {
+    public void setGradeType(GradeType gradeType) {
         this.gradeType = gradeType;
     }
 

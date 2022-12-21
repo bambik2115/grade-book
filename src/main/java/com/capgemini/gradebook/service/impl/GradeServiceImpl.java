@@ -2,7 +2,9 @@ package com.capgemini.gradebook.service.impl;
 
 
 import com.capgemini.gradebook.domain.GradeEto;
+import com.capgemini.gradebook.domain.GradeSearchCriteria;
 import com.capgemini.gradebook.domain.mapper.GradeMapper;
+import com.capgemini.gradebook.exceptions.GradeAlreadyCreatedTodayException;
 import com.capgemini.gradebook.exceptions.GradeNotFoundException;
 import com.capgemini.gradebook.exceptions.StudentNotFoundException;
 import com.capgemini.gradebook.exceptions.SubjectNotFoundException;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -46,11 +50,32 @@ public class GradeServiceImpl implements GradeService {
         return GradeMapper.mapToETO(grade);
     }
 
+    @Override
+    public List<GradeEto> searchGradesByCriteria(GradeSearchCriteria criteria) {
+
+        List<Grade> foundGrades = this.gradeRepository.findByCriteria(criteria);
+
+        return GradeMapper.mapToETOList(foundGrades);
+    }
+
+    @Override
+    public Double getWeightedAverage(Long studentId, Long subjectId) {
+        List<Grade> studentGradeList = this.gradeRepository.findAllGradeByStudentEntityIdAndSubjectEntityId(studentId, subjectId);
+        Double sumOfGrades = studentGradeList.stream().mapToDouble(grade -> grade.getValue()*grade.getWeight().doubleValue()).reduce(0, Double::sum);
+        Integer totalNumberOfGrades = studentGradeList.stream().mapToInt(grade -> grade.getWeight().intValue()).reduce(0, Integer::sum);
+
+        return sumOfGrades/totalNumberOfGrades;
+    }
+
     @Transactional
     @Override
     public GradeEto createNew(GradeEto newGrade) {
         if (newGrade.getId() != null) {
             newGrade.setId(null);
+        }
+        if(this.gradeRepository.findGradeByDateOfGradeGreaterThanEqualAndGradeType(newGrade.getDateOfGrade().toLocalDate().atStartOfDay(),
+                newGrade.getGradeType()).isPresent()) {
+            throw new GradeAlreadyCreatedTodayException("Grade of type: " + newGrade.getGradeType() + " has already been inserted today!");
         }
 
         StudentEntity student = this.studentRepository.findById(newGrade.getStudentEntityId())
