@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface TeacherRepoCustom {
 
-	List<TeacherEntity> findTeacherByLastName(String lastName);
+	List<TeacherEntity> findTeachersByLastName(String lastName);
 }

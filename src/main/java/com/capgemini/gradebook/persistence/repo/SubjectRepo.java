@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface SubjectRepo extends JpaRepository<SubjectEntity, Long>, SubjectRepoCustom {
 
-    List<SubjectEntity> findByTeacherEntityIdIsNull();
+    List<SubjectEntity> findAllByTeacherEntityIdIsNull();
 
     List<SubjectEntity> findAllStudentEntityByClassYearId(Long id);
+
+    List<SubjectEntity> findAllByTeacherEntityId(Long id);
 }

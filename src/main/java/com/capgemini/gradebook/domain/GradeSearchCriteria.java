@@ -3,6 +3,7 @@ package com.capgemini.gradebook.domain;
 import com.capgemini.gradebook.persistence.entity.GradeType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class GradeSearchCriteria {
@@ -15,9 +16,9 @@ public class GradeSearchCriteria {
 
     BigDecimal weightTo;
 
-    LocalDateTime createdDateFrom;
+    LocalDate createdDateFrom;
 
-    LocalDateTime createdDateTo;
+    LocalDate createdDateTo;
 
     GradeType gradeType;
 
@@ -57,19 +58,19 @@ public class GradeSearchCriteria {
         this.weightTo = weightTo;
     }
 
-    public LocalDateTime getCreatedDateFrom() {
+    public LocalDate getCreatedDateFrom() {
         return this.createdDateFrom;
     }
 
-    public void setCreatedDateFrom(LocalDateTime createdDateFrom) {
+    public void setCreatedDateFrom(LocalDate createdDateFrom) {
         this.createdDateFrom = createdDateFrom;
     }
 
-    public LocalDateTime getCreatedDateTo() {
+    public LocalDate getCreatedDateTo() {
         return this.createdDateTo;
     }
 
-    public void setCreatedDateTo(LocalDateTime createdDateTo) {
+    public void setCreatedDateTo(LocalDate createdDateTo) {
         this.createdDateTo = createdDateTo;
     }
 

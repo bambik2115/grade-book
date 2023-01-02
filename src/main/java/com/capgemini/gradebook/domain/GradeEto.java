@@ -10,6 +10,7 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class GradeEto extends AbstractEto {
@@ -18,7 +19,7 @@ public class GradeEto extends AbstractEto {
     @Range(min = 1, max = 6, message = "Grade value must be between 1 and 6")
     private Integer value;
 
-    @Range(min = 1, max = 6, message = "Grade weight must be between 1 and 6")
+    @Range(min = 1, max = 9, message = "Grade weight must be between 1 and 9")
     private BigDecimal weight;
 
     @Enumerated(EnumType.STRING)
@@ -27,7 +28,7 @@ public class GradeEto extends AbstractEto {
     private String comment;
 
     @NotNull
-    private LocalDateTime dateOfGrade;
+    private LocalDate dateOfGrade;
 
     private Long teacherEntityId;
 
@@ -69,11 +70,11 @@ public class GradeEto extends AbstractEto {
         this.comment = comment;
     }
 
-    public LocalDateTime getDateOfGrade() {
+    public LocalDate getDateOfGrade() {
         return this.dateOfGrade;
     }
 
-    public void setDateOfGrade(LocalDateTime dateOfGrade) {
+    public void setDateOfGrade(LocalDate dateOfGrade) {
         this.dateOfGrade = dateOfGrade;
     }
 

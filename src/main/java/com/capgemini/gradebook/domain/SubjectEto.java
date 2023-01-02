@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull;
 
 public class SubjectEto extends AbstractEto {
 
-
     @Enumerated(EnumType.STRING)
+    @NotNull
     private SubjectType subjectType;
 
     @NotNull

@@ -4,6 +4,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +22,7 @@ public class Grade extends AbstractEntity {
 
     private String comment;
 
-    private LocalDateTime dateOfGrade;
+    private LocalDate dateOfGrade;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private TeacherEntity teacherEntity;
@@ -34,8 +35,9 @@ public class Grade extends AbstractEntity {
 
     @PrePersist
     void preInsert() {
-        if (this.weight == null)
+        if (this.weight == null) {
             this.weight = new BigDecimal(1.00);
+        }
     }
 
     public Integer getValue() {
@@ -70,11 +72,11 @@ public class Grade extends AbstractEntity {
         this.comment = comment;
     }
 
-    public LocalDateTime getDateOfGrade() {
+    public LocalDate getDateOfGrade() {
         return this.dateOfGrade;
     }
 
-    public void setDateOfGrade(LocalDateTime dateOfGrade) {
+    public void setDateOfGrade(LocalDate dateOfGrade) {
         this.dateOfGrade = dateOfGrade;
     }
 

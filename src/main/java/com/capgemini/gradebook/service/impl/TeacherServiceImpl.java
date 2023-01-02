@@ -3,6 +3,7 @@ package com.capgemini.gradebook.service.impl;
 import com.capgemini.gradebook.domain.TeacherEto;
 import com.capgemini.gradebook.domain.mapper.TeacherMapper;
 import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
+import com.capgemini.gradebook.exceptions.TeacherStillInUseException;
 import com.capgemini.gradebook.persistence.entity.Grade;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
+import javax.validation.Valid;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +45,9 @@ public class TeacherServiceImpl implements TeacherService {
   }
 
   @Override
-  public List<TeacherEto> findTeacherByLastName(final String lastname) {
+  public List<TeacherEto> findTeachersByLastName(final String lastname) {
 
-    final List<TeacherEntity> teachers = this.teacherRepository.findTeacherByLastName(lastname);
+    final List<TeacherEntity> teachers = this.teacherRepository.findTeachersByLastName(lastname);
     return teachers.stream().map(teacher -> TeacherMapper.mapToETO(teacher)).collect(Collectors.toList());
   }
 
@@ -78,8 +80,7 @@ public class TeacherServiceImpl implements TeacherService {
   @Override
   public TeacherEto partialUpdate(Long id, Map<String, Object> updateInfo) {
 
-    TeacherEntity teacher = this.teacherRepository.findById(id)
-            .orElseThrow( ()-> new TeacherNotFoundException("Teacher with id: " + id + " could not be found"));
+    TeacherEntity teacher = this.teacherRepository.findById(id).get();
     TeacherEto teachereto = TeacherMapper.mapToETO(teacher);
     updateInfo.forEach((key, value) -> {
       Field field = ReflectionUtils.findField(TeacherEto.class, key);
@@ -95,14 +96,22 @@ public class TeacherServiceImpl implements TeacherService {
 
   @Transactional
   @Override
-  public void delete(Long id, Long newTeacherId) {
+  public void delete(Long id, Optional<Long> newTeacherId) {
 
-    this.teacherRepository.deleteById(id);
-    TeacherEntity entity = this.teacherRepository.findById(newTeacherId)
-            .orElseThrow( ()-> new TeacherNotFoundException("Teacher with id: " + newTeacherId + " could not be found"));
-    List<SubjectEntity> subjects = this.subjectRepository.findByTeacherEntityIdIsNull();
-    subjects.forEach(subject -> subject.setTeacherEntity(entity));
-    List<Grade> grades = this.gradeRepository.findByTeacherEntityIdIsNull();
-    grades.forEach(grade -> grade.setTeacherEntity(entity));
+    List<SubjectEntity> teacherInUse = this.subjectRepository.findAllByTeacherEntityId(id);
+    if(!teacherInUse.isEmpty() && newTeacherId.isPresent()) {
+      this.teacherRepository.deleteById(id);
+      TeacherEntity entity = this.teacherRepository.findById(newTeacherId.get())
+              .orElseThrow(() -> new TeacherNotFoundException("Teacher with id: " + newTeacherId.get() + " could not be found"));
+      List<SubjectEntity> subjects = this.subjectRepository.findAllByTeacherEntityIdIsNull();
+      subjects.forEach(subject -> subject.setTeacherEntity(entity));
+      List<Grade> grades = this.gradeRepository.findAllByTeacherEntityIdIsNull();
+      grades.forEach(grade -> grade.setTeacherEntity(entity));
+    }
+    else if(!teacherInUse.isEmpty()) {
+      throw new TeacherStillInUseException("Teacher with ID: " + id + " is in use, please pass ID to update");
+    } else {
+      this.teacherRepository.deleteById(id);
+    }
   }
 }

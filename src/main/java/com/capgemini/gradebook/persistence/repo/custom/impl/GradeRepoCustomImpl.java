@@ -2,7 +2,6 @@ package com.capgemini.gradebook.persistence.repo.custom.impl;
 
 import com.capgemini.gradebook.domain.GradeSearchCriteria;
 import com.capgemini.gradebook.persistence.entity.Grade;
-import com.capgemini.gradebook.persistence.entity.GradeType;
 import com.capgemini.gradebook.persistence.repo.custom.GradeRepoCustom;
 
 import javax.persistence.EntityManager;
@@ -11,10 +10,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 
 public class GradeRepoCustomImpl implements GradeRepoCustom {
 
@@ -31,8 +29,32 @@ public class GradeRepoCustomImpl implements GradeRepoCustom {
         Root<Grade> grade = criteriaquery.from(Grade.class);
         List<Predicate> predicates = new ArrayList<Predicate>();
 
-        if(criteria.getGradeType() != null){
+        if(criteria.getGradeType() != null) {
             predicates.add(query.equal(grade.get("gradeType"), criteria.getGradeType()));
+        }
+        if(criteria.getStudentEntityId() != null) {
+            predicates.add(query.equal(grade.get("studentEntity"), criteria.getStudentEntityId()));
+        }
+        if(criteria.getSubjectEntityId() != null) {
+            predicates.add(query.equal(grade.get("subjectEntity"), criteria.getSubjectEntityId()));
+        }
+        if(criteria.getValueFrom() != null) {
+            predicates.add(query.greaterThanOrEqualTo(grade.get("value"), criteria.getValueFrom()));
+        }
+        if(criteria.getValueTo() != null) {
+            predicates.add(query.lessThanOrEqualTo(grade.get("value"), criteria.getValueTo()));
+        }
+        if(criteria.getCreatedDateFrom() != null) {
+            predicates.add(query.greaterThanOrEqualTo(grade.get("dateOfGrade"), criteria.getCreatedDateFrom()));
+        }
+        if(criteria.getCreatedDateTo() != null) {
+            predicates.add(query.lessThanOrEqualTo(grade.get("dateOfGrade"), criteria.getCreatedDateTo()));
+        }
+        if(criteria.getWeightFrom() != null) {
+            predicates.add(query.greaterThanOrEqualTo(grade.get("weight"), criteria.getWeightFrom()));
+        }
+        if(criteria.getWeightTo() != null) {
+            predicates.add(query.lessThanOrEqualTo(grade.get("weight"), criteria.getWeightTo()));
         }
 
         criteriaquery.select(grade)

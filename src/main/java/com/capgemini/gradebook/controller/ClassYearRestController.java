@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.Map;
 
 @RestController
@@ -22,26 +21,26 @@ public class ClassYearRestController {
         this.classYearService = classYearService;
     }
 
-    @GetMapping("/classyear/{id}")
+    @GetMapping("/classyear/get/{id}")
     public ResponseEntity<ClassYearEto> findClassYearById(@PathVariable("id") final Long id) {
 
         final ClassYearEto classyear = this.classYearService.findClassYearById(id);
         return ResponseEntity.ok().body(classyear);
     }
 
-    @PostMapping("/classyear")
-    public ClassYearEto addClassYear(@Valid @RequestBody ClassYearEto newClassYear) {
+    @PostMapping("/classyear/new")
+    public ClassYearEto addClassYear(@RequestBody ClassYearEto newClassYear) {
 
         return classYearService.createNew(newClassYear);
     }
 
-    @PatchMapping("/classyear/{id}")
+    @PatchMapping("/classyear/update/{id}")
     ClassYearEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
 
         return classYearService.partialUpdate(id, updateInfo);
     }
 
-    @DeleteMapping("/classyear/{id}")
+    @DeleteMapping("/classyear/delete/{id}")
     void deleteClassYear(@PathVariable Long id) {
         classYearService.delete(id);
     }

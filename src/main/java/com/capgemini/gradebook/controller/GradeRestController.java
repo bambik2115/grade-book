@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ public class GradeRestController {
         this.gradeService = gradeService;
     }
 
-    @GetMapping("/grades/{id}")
+    @GetMapping("/grades/get/{id}")
     public ResponseEntity<GradeEto> findGradeById(@PathVariable("id") final Long id) {
 
         final GradeEto grade = this.gradeService.findGradeById(id);
@@ -38,24 +37,24 @@ public class GradeRestController {
         return this.gradeService.getWeightedAverage(studentId, subjectId);
     }
 
-    @GetMapping("/grades")
+    @GetMapping("/grades/search")
     public List<GradeEto> findGradesByCriteria(@RequestBody GradeSearchCriteria criteria) {
 
         return this.gradeService.searchGradesByCriteria(criteria);
     }
 
-    @PostMapping("/grades")
-    public GradeEto addGrade(@Valid @RequestBody GradeEto newGrade) {
+    @PostMapping("/grades/new")
+    public GradeEto addGrade(@RequestBody GradeEto newGrade) {
 
         return this.gradeService.createNew(newGrade);
     }
 
-    @PatchMapping("/grades/{id}")
+    @PatchMapping("/grades/update/{id}")
     public GradeEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
         return this.gradeService.partialUpdate(id, updateInfo);
     }
 
-    @DeleteMapping("/grades/{id}")
+    @DeleteMapping("/grades/delete/{id}")
     void deleteGrade(@PathVariable Long id) {
         this.gradeService.delete(id);
     }

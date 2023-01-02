@@ -10,9 +10,7 @@ import java.util.List;
 public class ClassYear extends AbstractEntity {
 
     private Integer classLevel;
-
     private String className;
-
     private String classYear;
 
     @PreRemove

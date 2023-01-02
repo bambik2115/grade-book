@@ -13,7 +13,7 @@ public class TeacherRepoCustomImpl implements TeacherRepoCustom {
   private EntityManager em;
 
   @Override
-  public List<TeacherEntity> findTeacherByLastName(String lastName) {
+  public List<TeacherEntity> findTeachersByLastName(String lastName) {
 
     List<TeacherEntity> result = em.createQuery("SELECT t FROM TeacherEntity t WHERE t.lastName = :lastName")
         .setParameter("lastName", lastName)

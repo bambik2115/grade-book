@@ -4,10 +4,7 @@ package com.capgemini.gradebook.service.impl;
 import com.capgemini.gradebook.domain.GradeEto;
 import com.capgemini.gradebook.domain.GradeSearchCriteria;
 import com.capgemini.gradebook.domain.mapper.GradeMapper;
-import com.capgemini.gradebook.exceptions.GradeAlreadyCreatedTodayException;
-import com.capgemini.gradebook.exceptions.GradeNotFoundException;
-import com.capgemini.gradebook.exceptions.StudentNotFoundException;
-import com.capgemini.gradebook.exceptions.SubjectNotFoundException;
+import com.capgemini.gradebook.exceptions.*;
 import com.capgemini.gradebook.persistence.entity.Grade;
 import com.capgemini.gradebook.persistence.entity.StudentEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
@@ -15,15 +12,17 @@ import com.capgemini.gradebook.persistence.repo.GradeRepo;
 import com.capgemini.gradebook.persistence.repo.StudentRepo;
 import com.capgemini.gradebook.persistence.repo.SubjectRepo;
 import com.capgemini.gradebook.service.GradeService;
+import org.apache.commons.math3.util.Precision;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class GradeServiceImpl implements GradeService {
@@ -32,6 +31,10 @@ public class GradeServiceImpl implements GradeService {
     private final GradeRepo gradeRepository;
     private final StudentRepo studentRepository;
     private final SubjectRepo subjectRepository;
+
+
+    @Autowired
+    private Validator validator;
 
     @Autowired
     public GradeServiceImpl(final GradeRepo gradeRepository, final StudentRepo studentRepository, final SubjectRepo subjectRepository) {
@@ -45,7 +48,7 @@ public class GradeServiceImpl implements GradeService {
     public GradeEto findGradeById(Long id) {
 
         Grade grade = this.gradeRepository.findById(id)
-                .orElseThrow( ()-> new GradeNotFoundException("Student with id: " + id + " could not be found"));
+                .orElseThrow( ()-> new GradeNotFoundException("Grade with id: " + id + " could not be found"));
 
         return GradeMapper.mapToETO(grade);
     }
@@ -58,13 +61,15 @@ public class GradeServiceImpl implements GradeService {
         return GradeMapper.mapToETOList(foundGrades);
     }
 
+
     @Override
     public Double getWeightedAverage(Long studentId, Long subjectId) {
+
         List<Grade> studentGradeList = this.gradeRepository.findAllGradeByStudentEntityIdAndSubjectEntityId(studentId, subjectId);
         Double sumOfGrades = studentGradeList.stream().mapToDouble(grade -> grade.getValue()*grade.getWeight().doubleValue()).reduce(0, Double::sum);
-        Integer totalNumberOfGrades = studentGradeList.stream().mapToInt(grade -> grade.getWeight().intValue()).reduce(0, Integer::sum);
+        Double totalNumberOfGrades = studentGradeList.stream().mapToDouble(grade -> grade.getWeight().intValue()).reduce(0, Double::sum);
 
-        return sumOfGrades/totalNumberOfGrades;
+        return Precision.round(sumOfGrades/totalNumberOfGrades,2);
     }
 
     @Transactional
@@ -73,9 +78,22 @@ public class GradeServiceImpl implements GradeService {
         if (newGrade.getId() != null) {
             newGrade.setId(null);
         }
-        if(this.gradeRepository.findGradeByDateOfGradeGreaterThanEqualAndGradeType(newGrade.getDateOfGrade().toLocalDate().atStartOfDay(),
-                newGrade.getGradeType()).isPresent()) {
+
+        Set<ConstraintViolation<GradeEto>> violations = validator.validate(newGrade);
+        if (!violations.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ConstraintViolation<GradeEto> constraintViolation : violations) {
+                sb.append(constraintViolation.getMessage());
+            }
+            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+        }
+
+        if(gradeCreatedToday(newGrade).isPresent()) {
             throw new GradeAlreadyCreatedTodayException("Grade of type: " + newGrade.getGradeType() + " has already been inserted today!");
+        }
+
+        if((newGrade.getValue() == 1 || newGrade.getValue() == 6) && (newGrade.getComment() == null || newGrade.getComment().isBlank())) {
+            throw new GradeCommentIsEmptyException("Comment field for this grade value can't be empty!");
         }
 
         StudentEntity student = this.studentRepository.findById(newGrade.getStudentEntityId())
@@ -96,8 +114,7 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public GradeEto partialUpdate(Long id, Map<String, Object> updateInfo) {
 
-        Grade grade = this.gradeRepository.findById(id)
-                .orElseThrow( ()-> new GradeNotFoundException("Student with id: " + id + " could not be found"));
+        Grade grade = this.gradeRepository.findById(id).get();
         GradeEto gradeeto = GradeMapper.mapToETO(grade);
         updateInfo.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(GradeEto.class, key);
@@ -123,5 +140,12 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public void delete(Long id) {
         this.gradeRepository.deleteById(id);
+    }
+
+
+    private Optional<Grade> gradeCreatedToday(GradeEto gradeeto) {
+        return this.gradeRepository
+                .findGradeByDateOfGradeAndGradeType
+                        (gradeeto.getDateOfGrade(), gradeeto.getGradeType());
     }
 }

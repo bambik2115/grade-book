@@ -1,9 +1,16 @@
 package com.capgemini.gradebook.domain;
 
+import javax.validation.constraints.NotNull;
+
 public class TeacherEto extends AbstractEto {
 
+  @NotNull
   private String firstName;
+
+  @NotNull
   private String lastName;
+
+
   //TODO IMPLEMENT: after creating the SubjectEntity, SubjectEto and mapping between them, fix the ETOs and Mappers
   //dev note: rememeber, if Entity contains a list of other entities, Eto class should contain a list of
   // Ids, or even nothing that represents a one-to-many relationship, to avoid circular, neverending mapping in mappers.

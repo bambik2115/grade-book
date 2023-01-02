@@ -14,4 +14,5 @@ public interface TeacherRepo extends JpaRepository<TeacherEntity, Long>, Teacher
 //  TeacherEntity getTeacherByLastname(@Param("lastName") String lastName);
 
 
+
 }

@@ -8,7 +8,7 @@ public interface SubjectService {
 
     SubjectEto createNew(SubjectEto newSubject);
 
-    SubjectEto updateSubjectTeacher(Long id, SubjectEto newTeacherId);
+    SubjectEto updateSubjectTeacher(Long id, Long newTeacherId);
 
     void delete(Long id);
 }

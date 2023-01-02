@@ -2,14 +2,16 @@ package com.capgemini.gradebook.service;
 
 import com.capgemini.gradebook.domain.TeacherEto;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface TeacherService {
 
 	List<TeacherEto> findAllTeachers();
 
-	List<TeacherEto> findTeacherByLastName(final String lastname) ;
+	List<TeacherEto> findTeachersByLastName(final String lastname) ;
 
 	List<String> getSubjects(Long id);
 
@@ -19,5 +21,5 @@ public interface TeacherService {
 
 	TeacherEto createNew(TeacherEto newTeacher);
 
-	void delete(Long id, Long newTeacherId);
+	void delete(Long id, Optional<Long> newTeacherId);
 }

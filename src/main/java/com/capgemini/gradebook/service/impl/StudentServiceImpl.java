@@ -1,9 +1,11 @@
 package com.capgemini.gradebook.service.impl;
 
 
+import com.capgemini.gradebook.domain.GradeContext;
 import com.capgemini.gradebook.domain.StudentEto;
 import com.capgemini.gradebook.domain.mapper.StudentMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
+import com.capgemini.gradebook.exceptions.StudentNotFoundException;
 import com.capgemini.gradebook.persistence.entity.ClassYear;
 import com.capgemini.gradebook.persistence.entity.StudentEntity;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
@@ -14,15 +16,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
     private final ClassYearRepo classyearRepository;
     private final StudentRepo studentRepository;
+
+    @Autowired
+    private Validator validator;
+
 
     @Autowired
     public StudentServiceImpl(final ClassYearRepo classyearRepository, final StudentRepo studentRepository) {
@@ -35,9 +47,28 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentEto findStudentById(Long id) {
 
-        Optional<StudentEntity> entity = studentRepository.findById(id);
+        StudentEntity entity = studentRepository.findById(id)
+                .orElseThrow( ()-> new StudentNotFoundException("Student with id: " + id + " could not be found"));
 
-        return StudentMapper.mapToETO(entity.get());
+        return StudentMapper.mapToETO(entity);
+    }
+
+    @Override
+    public List<StudentEto> findAllStudentsWithGradeFAtCertainDay(LocalDate day) {
+
+        List<StudentEntity> result = this.studentRepository
+                .findAllByGradeFAtCertainDay(day);
+
+        return StudentMapper.mapToETOList(result);
+    }
+
+    @Override
+    public Integer getNumberOfStudents(GradeContext context) {
+
+        List<StudentEntity> number = this.studentRepository
+                .findAllByCertainGradeAtCertainDay(context.getGradeType(), context.getDateOfGrade());
+
+        return number.size();
     }
 
     @Transactional
@@ -46,6 +77,16 @@ public class StudentServiceImpl implements StudentService {
         if (newStudent.getId() != null) {
             newStudent.setId(null);
         }
+
+        Set<ConstraintViolation<StudentEto>> violations = validator.validate(newStudent);
+        if (!violations.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ConstraintViolation<StudentEto> constraintViolation : violations) {
+                sb.append(constraintViolation.getMessage());
+            }
+            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+        }
+
         ClassYear classyear = classyearRepository.findById(newStudent.getClassYearId())
                 .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newStudent.getClassYearId() + " could not be found"));
         StudentEntity student = StudentMapper.mapToEntity(newStudent);
