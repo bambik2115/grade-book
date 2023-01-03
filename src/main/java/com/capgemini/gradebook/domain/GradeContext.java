@@ -3,8 +3,6 @@ package com.capgemini.gradebook.domain;
 import com.capgemini.gradebook.persistence.entity.GradeType;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GradeContext {
 

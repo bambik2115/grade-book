@@ -8,6 +8,7 @@ import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
 import com.capgemini.gradebook.persistence.entity.ClassYear;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
+import com.capgemini.gradebook.persistence.entity.utils.SubjectUtils;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
 import com.capgemini.gradebook.persistence.repo.SubjectRepo;
 import com.capgemini.gradebook.persistence.repo.TeacherRepo;
@@ -74,7 +75,7 @@ public class SubjectServiceImpl implements SubjectService {
                 .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newSubject.getClassYearId() + " could not be found"));
         subjectEntity.setTeacherEntity(teacher);
         subjectEntity.setClassYear(classyear);
-        subjectEntity.setName();
+        subjectEntity.setName(SubjectUtils.setCustomName(classyear, newSubject.getSubjectType()));
         subjectEntity = this.subjectRepository.save(subjectEntity);
         return SubjectMapper.mapToETO(subjectEntity);
     }

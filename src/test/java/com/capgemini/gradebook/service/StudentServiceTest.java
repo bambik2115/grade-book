@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -78,7 +79,7 @@ class StudentServiceTest {
 
     @Test
     public void findAllWithGradeFAtCertainDayShouldReturnProperStudentsIfFound() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
@@ -87,30 +88,32 @@ class StudentServiceTest {
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(3.00));
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(2.00));
         createGrade(te, ste1, sue, GradeType.C, 1, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(2.00));
-
+        //when
         List<StudentEto> result = studentService.findAllStudentsWithGradeFAtCertainDay(LocalDate.parse("2022-12-12"));
-
+        //then
         Assertions.assertThat(result.size()).isEqualTo(2);
         Assertions.assertThat(result.get(0).getId()).isEqualTo(1L);
+        Assertions.assertThat(result.get(0).getFirstName()).isEqualTo("Kamil");
+        Assertions.assertThat(result.get(1).getLastName()).isEqualTo("Komar");
     }
 
     @Test
     public void findAllWithGradeFAtCertainDayShouldReturnEmptyListIfNotFound() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
         SubjectEntity sue = tec.saveTestSubject(cy,te);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(3.00));
-
+        //when
         List<StudentEto> result = studentService.findAllStudentsWithGradeFAtCertainDay(LocalDate.parse("2022-11-12"));
-
+        //then
         Assertions.assertThat(result).isEmpty();
     }
 
     @Test
     public void getNumberOfStudentsShouldReturnCorrectNumber() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
@@ -122,15 +125,15 @@ class StudentServiceTest {
         GradeContext context = new GradeContext();
         context.setGradeType(GradeType.F);
         context.setDateOfGrade(LocalDate.parse("2022-12-12"));
-
+        //when
         Integer count = studentService.getNumberOfStudents(context);
-
+        //then
         Assertions.assertThat(count).isEqualTo(2);
     }
 
     @Test
     public void getNumberOfStudentsShouldReturnZeroIfNoneFound() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
@@ -142,9 +145,9 @@ class StudentServiceTest {
         GradeContext context = new GradeContext();
         context.setGradeType(GradeType.D);
         context.setDateOfGrade(LocalDate.parse("2022-12-12"));
-
+        //when
         Integer count = studentService.getNumberOfStudents(context);
-
+        //then
         Assertions.assertThat(count).isEqualTo(0);
     }
 
@@ -169,30 +172,30 @@ class StudentServiceTest {
 
     @Test
     public void createNewShouldReturnInstanceOfStudentEto() {
-
+        //given
         tec.saveTestClassYear();
         StudentEto studentEto = new StudentEto();
         studentEto.setClassYearId(1L);
         studentEto.setLastName("Kamil");
         studentEto.setFirstName("Slimak");
-
+        //when
         StudentEto result = studentService.createNew(studentEto);
-
+        //then
         Assertions.assertThat(result).isInstanceOf(StudentEto.class);
     }
 
     @Test
     public void createNewShouldReturnStudentWithMatchingFields() {
-
+        //given
         tec.saveTestClassYear();
         StudentEto studentEto = new StudentEto();
         studentEto.setClassYearId(1L);
         studentEto.setFirstName("Kamil");
         studentEto.setLastName("Slimak");
         studentEto.setAge(20);
-
+        //when
         StudentEto result = studentService.createNew(studentEto);
-
+        //then
         Assertions.assertThat(result.getFirstName()).isEqualTo("Kamil");
         Assertions.assertThat(result.getLastName()).isEqualTo("Slimak");
         Assertions.assertThat(result.getAge()).isEqualTo(20);
@@ -201,31 +204,46 @@ class StudentServiceTest {
 
     @Test
     public void createNewShouldThrowExceptionIfClassYearIDNotExist()  {
-
+        //given
         StudentEto studentEto = new StudentEto();
         studentEto.setClassYearId(1L);
         studentEto.setFirstName("Kamil");
         studentEto.setLastName("Slimak");
 
         Assertions.assertThatThrownBy(() -> {
-
+                    //when
             studentService.createNew(studentEto);
-
+                    //then
         }).isInstanceOf(ClassYearNotFoundException.class)
                 .hasMessageContaining("ClassYear with id: " + 1L + " could not be found");
     }
 
 
     @Test
-    public void partialUpdateShouldReturnInstanceOfStudentEto() {
+    public void createNewShouldThrowExceptionWhenClassYearIdNotProvided() {
+        //given
+        StudentEto studentEto = new StudentEto();
+        studentEto.setFirstName("Kamil");
+        studentEto.setLastName("Slimak");
 
+        Assertions.assertThatThrownBy(() -> {
+            //when
+            studentService.createNew(studentEto);
+            //then
+        }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+
+    @Test
+    public void partialUpdateShouldReturnInstanceOfStudentEto() {
+        //given
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestStudent(cy);
         Map<String, Object> info = new HashMap<>();
         info.put("firstName", "Kuba");
-
+        //when
         StudentEto studenteto = studentService.partialUpdate(1L, info);
-
+        //then
         Assertions.assertThat(studenteto).isInstanceOf(StudentEto.class);
 
     }
@@ -252,7 +270,7 @@ class StudentServiceTest {
 
     @Test
     public void partialUpdateWithNotExistingClassYearShouldThrowException() {
-
+        //given
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestStudent(cy);
 
@@ -260,42 +278,45 @@ class StudentServiceTest {
         info.put("classYearId", 2);
 
         Assertions.assertThatThrownBy(() -> {
-
+                    //when
             studentService.partialUpdate(1L, info);
+                    //then
         }).isInstanceOf(ClassYearNotFoundException.class)
                 .hasMessageContaining("ClassYear with id: " + 2L + " could not be found");
     }
 
     @Test
     public void deleteStudentAndThenGetItShouldThrowException() {
+        //given
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestStudent(cy);
 
         Assertions.assertThatThrownBy(() -> {
+                    //when
                     studentService.delete(1L);
-
                     StudentEto result = studentService.findStudentById(1L);
-
+                    //then
                 }).isInstanceOf(StudentNotFoundException.class)
                 .hasMessageContaining("Student with id: " + 1L + " could not be found");
     }
 
     @Test
     public void deleteStudentShouldLeaveEmptyDatabaseTable() {
-
+        //given
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestStudent(cy);
 
-
+        //when
         studentService.delete(1L);
 
         List<StudentEntity> students = this.strepo.findAll();
-
+        //then
         Assertions.assertThat(students).isEmpty();
     }
 
     @Test
     public void deleteStudentShouldDeleteAllAssignedGrades() {
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);

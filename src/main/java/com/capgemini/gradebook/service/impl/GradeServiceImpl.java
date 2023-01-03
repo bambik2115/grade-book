@@ -22,7 +22,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class GradeServiceImpl implements GradeService {
@@ -55,6 +58,16 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeEto> searchGradesByCriteria(GradeSearchCriteria criteria) {
+
+        if(criteria.getCreatedDateTo().isBefore(criteria.getCreatedDateFrom())) {
+            throw new InvalidRangeProvidedException("Grade creation date To can't be before From");
+        }
+        if(criteria.getValueTo() < criteria.getValueFrom()) {
+            throw new InvalidRangeProvidedException(("Grade value To can't be lower than From"));
+        }
+        if(criteria.getWeightTo().compareTo(criteria.getWeightFrom()) < 0) {
+            throw new InvalidRangeProvidedException(("Grade weight To can't be lower than From"));
+        }
 
         List<Grade> foundGrades = this.gradeRepository.findByCriteria(criteria);
 

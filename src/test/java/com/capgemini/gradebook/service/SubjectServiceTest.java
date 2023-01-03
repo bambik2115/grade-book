@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
 
 import java.util.List;
 
@@ -96,38 +97,38 @@ class SubjectServiceTest {
 
     @Test
     public void createNewShouldReturnInstanceOfSubjectEto() {
-
+        //given
         tec.saveTestTeacher();
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setTeacherEntityId(1L);
         subjectEto.setClassYearId(1L);
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
-
+        //when
         SubjectEto result = subjectService.createNew(subjectEto);
-
+        //then
         Assertions.assertThat(result).isInstanceOf(SubjectEto.class);
     }
 
     @Test
     public void createNewShouldReturnSubjectWithMatchingFields() {
-
+        //given
         tec.saveTestTeacher();
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setTeacherEntityId(1L);
         subjectEto.setClassYearId(1L);
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
-
+        //when
         SubjectEto result = subjectService.createNew(subjectEto);
-
+        //then
         Assertions.assertThat(result.getSubjectType()).isEqualTo(SubjectType.CHEMISTRY);
         Assertions.assertThat(result.getTeacherEntityId()).isEqualTo(1L);
     }
 
     @Test
     public void createNewShouldThrowExceptionWhenProvidedNotExistingTeacherID() {
-
+        //given
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setClassYearId(1L);
@@ -144,7 +145,7 @@ class SubjectServiceTest {
 
     @Test
     public void createNewShouldThrowExceptionWhenProvidedNotExistingClassYearID() {
-
+        //given
         tec.saveTestTeacher();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setClassYearId(1L);
@@ -160,26 +161,73 @@ class SubjectServiceTest {
     }
 
     @Test
-    public void updateSubjectTeacherShouldReturnSubjectWithNewTeacherID() {
+    public void createNewShouldThrowExceptionWhenNoClassYearIdProvided() {
+        //given
+        tec.saveTestTeacher();
+        SubjectEto subjectEto = new SubjectEto();
+        subjectEto.setTeacherEntityId(1L);
+        subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
+        Assertions.assertThatThrownBy(() -> {
+                    //when
+                    subjectService.createNew(subjectEto);
+                    //then
+                }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @Test
+    public void createNewShouldThrowExceptionWhenNoTeacherEntityIdProvided() {
+        //given
+        tec.saveTestTeacher();
+        SubjectEto subjectEto = new SubjectEto();
+        subjectEto.setClassYearId(1L);
+        subjectEto.setSubjectType(SubjectType.BIOLOGY);
+
+        Assertions.assertThatThrownBy(() -> {
+            //when
+            subjectService.createNew(subjectEto);
+            //then
+        }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @Test
+    public void createNewShouldThrowExceptionWhenNoSubjectTypeProvided() {
+        //given
+        tec.saveTestTeacher();
+        SubjectEto subjectEto = new SubjectEto();
+        subjectEto.setTeacherEntityId(1L);
+        subjectEto.setClassYearId(1L);
+
+        Assertions.assertThatThrownBy(() -> {
+            //when
+            subjectService.createNew(subjectEto);
+            //then
+        }).isInstanceOf(ConstraintViolationException.class);
+    }
+
+
+
+    @Test
+    public void updateSubjectTeacherShouldReturnSubjectWithNewTeacherID() {
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
         tec.saveTestTeacher();
 
         Long oldID = surepo.findById(1L).get().getTeacherEntity().getId();
-
+        //when
         SubjectEto updatedSubject = subjectService.updateSubjectTeacher(1L, 2L);
 
         Long newID = surepo.findById(1L).get().getTeacherEntity().getId();
-
+        //then
         Assertions.assertThat(newID).isNotEqualTo(oldID);
         Assertions.assertThat(updatedSubject.getTeacherEntityId()).isEqualTo(newID);
     }
 
     @Test
     public void updateSubjectTeacherShouldThrowExceptionWhenProvideNotExistingTeacherID() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
@@ -195,32 +243,36 @@ class SubjectServiceTest {
 
     @Test
     public void deleteSubjectAndThenGetItShouldThrowException() {
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
+                    //when
                     subjectService.delete(1L);
                     SubjectEto result = subjectService.findSubjectById(1L);
+                    //then
                 }).isInstanceOf(SubjectNotFoundException.class)
                 .hasMessageContaining("Subject with id: " + 1L + " could not be found");
     }
 
     @Test
     public void deleteSubjectShouldLeaveEmptyDatabaseTable() {
-
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
-
+        //when
         subjectService.delete(1L);
         List<SubjectEntity> subjects = this.surepo.findAll();
-
+        //then
         Assertions.assertThat(subjects).isEmpty();
     }
 
     @Test
     public void deleteSubjectShouldDeleteAllAssignedGrades() {
+        //given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
@@ -232,9 +284,8 @@ class SubjectServiceTest {
         //when
         subjectService.delete(1L);
 
-        //then
         Integer newGradesCount = this.grepo.findAllBySubjectEntityId(1L).size();
-
+        //then
         Assertions.assertThat(oldGradesCount).isNotEqualTo(newGradesCount);
         Assertions.assertThat(newGradesCount).isEqualTo(0);
 

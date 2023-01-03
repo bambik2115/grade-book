@@ -1,11 +1,8 @@
 package com.capgemini.gradebook.persistence.entity;
 
-import org.hibernate.annotations.ColumnDefault;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "GRADE")
@@ -15,7 +12,7 @@ public class Grade extends AbstractEntity {
     private Integer value;
 
     @Column(precision = 3, scale = 2)
-    private BigDecimal weight;
+    private BigDecimal weight = BigDecimal.ONE;
 
     @Enumerated(EnumType.STRING)
     private GradeType gradeType;
@@ -33,12 +30,6 @@ public class Grade extends AbstractEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private StudentEntity studentEntity;
 
-    @PrePersist
-    void preInsert() {
-        if (this.weight == null) {
-            this.weight = new BigDecimal(1.00);
-        }
-    }
 
     public Integer getValue() {
         return this.value;

@@ -6,9 +6,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
 
 import com.capgemini.gradebook.DbCleanUpService;
 import com.capgemini.gradebook.TestEntityCreator;
+import com.capgemini.gradebook.domain.SubjectEto;
 import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
 import com.capgemini.gradebook.exceptions.TeacherStillInUseException;
 import com.capgemini.gradebook.persistence.entity.*;
@@ -132,9 +134,9 @@ class TeacherServiceTest {
   public void createNewShouldReturnInstanceOfTeacherEto() {
 
     TeacherEto teachereto = new TeacherEto();
-
+    //when
     TeacherEto result = teacherService.createNew(teachereto);
-
+    //then
     Assertions.assertThat(result).isInstanceOf(TeacherEto.class);
   }
 
@@ -144,13 +146,40 @@ class TeacherServiceTest {
     TeacherEto teachereto = new TeacherEto();
     teachereto.setFirstName("Kamil");
     teachereto.setLastName("Komar");
-
+    //when
     TeacherEto result = teacherService.createNew(teachereto);
-
+    //then
     Assertions.assertThat(result.getFirstName()).isEqualTo("Kamil");
     Assertions.assertThat(result.getLastName()).isEqualTo("Komar");
   }
 
+  @Test
+  public void createNewShouldThrowExceptionWhenNoFirstNameProvided() {
+
+    TeacherEto teachereto = new TeacherEto();
+    teachereto.setLastName("Komar");
+
+
+    Assertions.assertThatThrownBy(() -> {
+      //when
+      teacherService.createNew(teachereto);
+      //then
+    }).isInstanceOf(ConstraintViolationException.class);
+  }
+
+  @Test
+  public void createNewShouldThrowExceptionWhenNoLastNameProvided() {
+
+    TeacherEto teachereto = new TeacherEto();
+    teachereto.setFirstName("Kamil");
+
+
+    Assertions.assertThatThrownBy(() -> {
+      //when
+      teacherService.createNew(teachereto);
+      //then
+    }).isInstanceOf(ConstraintViolationException.class);
+  }
 
   @Test
   public void partialUpdateShouldReturnInstanceOfTeacherEto() {
@@ -158,9 +187,9 @@ class TeacherServiceTest {
     tec.saveTestTeacher();
     Map<String, Object> info = new HashMap<>();
     info.put("firstName", "Kuba");
-
+    //when
     TeacherEto teachereto = teacherService.partialUpdate(1L, info);
-
+    //then
     Assertions.assertThat(teachereto).isInstanceOf(TeacherEto.class);
 
   }
@@ -190,7 +219,7 @@ class TeacherServiceTest {
 
   @Test
   public void deleteTeacherWithNewIdShouldLeaveNoNullSubjectTeacherIDs () {
-
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
@@ -198,17 +227,17 @@ class TeacherServiceTest {
     trepo.save(te2);
     ClassYear cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
-
+    //when
     teacherService.delete(1L, Optional.of(2L));
 
     List<SubjectEntity> result = this.surepo.findAllByTeacherEntityIdIsNull();
-
+    //then
     Assertions.assertThat(result).isEmpty();
   }
 
   @Test
   public void deleteTeacherWithNewIdShouldLeaveNoNullGradeTeacherIDs() {
-
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
@@ -219,17 +248,18 @@ class TeacherServiceTest {
     StudentEntity st = tec.saveTestStudent(cy);
     tec.saveTestGrade(te, st, su);
 
+    //when
     teacherService.delete(1L, Optional.of(2L));
 
     List<Grade> result = this.grepo.findAllByTeacherEntityIdIsNull();
-
+    //then
     Assertions.assertThat(result).isEmpty();
 
   }
 
   @Test
   public void deleteTeacherWithNewIdShouldAssignNewTeacherIdToSubject() {
-
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
@@ -240,18 +270,19 @@ class TeacherServiceTest {
 
     Long oldId = surepo.findById(1L).get().getTeacherEntity().getId();
 
+    //when
     teacherService.delete(1L, Optional.of(2L));
 
     Long newId = surepo.findById(1L).get().getTeacherEntity().getId();
 
-
+    //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
     Assertions.assertThat(newId).isEqualTo(2L);
   }
 
   @Test
   public void deleteTeacherWithNewIdShouldAssignNewTeacherIdToGrade() {
-
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
@@ -264,34 +295,43 @@ class TeacherServiceTest {
 
     Long oldId = grepo.findById(1L).get().getTeacherEntity().getId();
 
+    //when
     teacherService.delete(1L, Optional.of(2L));
 
     Long newId = grepo.findById(1L).get().getTeacherEntity().getId();
-
+    //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
     Assertions.assertThat(newId).isEqualTo(2L);
   }
 
   @Test
   public void deleteTeacherWithNotExistingNewIdShouldThrowException() {
-
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     ClassYear cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
+
+              //when
       teacherService.delete(1L, Optional.of(2L));
+              //then
     }).isInstanceOf(TeacherNotFoundException.class)
             .hasMessageContaining("Teacher with id: " + 2L + " could not be found");
   }
 
   @Test
   public void deleteTeacherAndThenGetItShouldThrowException() {
+    //Given
     tec.saveTestTeacher();
 
     Assertions.assertThatThrownBy(() -> {
+
+              //when
       teacherService.delete(1L, Optional.empty());
+
       TeacherEto result = teacherService.findTeacherById(1L);
+              //then
     }).isInstanceOf(TeacherNotFoundException.class)
             .hasMessageContaining("Teacher with id: " + 1L + " could not be found");
 
@@ -299,25 +339,29 @@ class TeacherServiceTest {
 
   @Test
   public void deleteTeacherInUseWithoutNewIdShouldThrowException() {
+    //Given
     TeacherEntity te = tec.saveTestTeacher();
     ClassYear cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
-
+              //when
       this.teacherService.delete(1L, Optional.empty());
+              //then
     }).isInstanceOf(TeacherStillInUseException.class)
             .hasMessageContaining("Teacher with ID: " + 1L + " is in use, please pass ID to update");
   }
 
   @Test
   public void deleteTeacherShouldLeaveEmptyDatabaseTable() {
+    //Given
     tec.saveTestTeacher();
 
-
+    //when
     teacherService.delete(1L, Optional.empty());
-    List<TeacherEntity> teachers = this.trepo.findAll();
 
+    List<TeacherEntity> teachers = this.trepo.findAll();
+    //then
     Assertions.assertThat(teachers).isEmpty();
   }
 

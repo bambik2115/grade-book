@@ -42,6 +42,7 @@ class StudentRepoCustomTest {
 
     @Test
     public void findByGradeFAtCertainDayShouldReturnMatchingStudents() {
+        //Given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
@@ -54,9 +55,10 @@ class StudentRepoCustomTest {
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(3.00));
         createGrade(te, ste2, sue, GradeType.D, 3, LocalDate.parse("2022-11-18"), BigDecimal.valueOf(2.00));
 
-
+        //When
         List<StudentEntity> result = this.strepo.findAllByGradeFAtCertainDay(LocalDate.parse("2022-11-16"));
 
+        //then
         Assertions.assertThat(result.size()).isEqualTo(2L);
         Assertions.assertThat(result.get(0).getId()).isEqualTo(1L);
         Assertions.assertThat(result.get(1).getId()).isEqualTo(2L);
@@ -65,6 +67,7 @@ class StudentRepoCustomTest {
 
     @Test
     public void findByGradeFAtCertainDayShouldReturnEmptyListIfNoMatches() {
+        //Given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
@@ -75,15 +78,16 @@ class StudentRepoCustomTest {
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(3.00));
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(3.00));
 
-
+        //When
         List<StudentEntity> result = this.strepo.findAllByGradeFAtCertainDay(LocalDate.parse("2022-11-17"));
 
+        //then
         Assertions.assertThat(result).isEmpty();
     }
 
     @Test
     public void findByCertainGradeAtCertainDayShouldReturnMatchingStudents() {
-
+        //Given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
@@ -96,9 +100,10 @@ class StudentRepoCustomTest {
         createGrade(te, ste1, sue, GradeType.B, 5, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(3.00));
         createGrade(te, ste2, sue, GradeType.C, 4, LocalDate.parse("2022-11-18"), BigDecimal.valueOf(2.00));
 
-
+        //When
         List<StudentEntity> result = this.strepo.findAllByCertainGradeAtCertainDay(GradeType.C, LocalDate.parse("2022-11-18"));
 
+        //then
         Assertions.assertThat(result.size()).isEqualTo(2L);
         Assertions.assertThat(result.get(0).getId()).isEqualTo(2L);
         Assertions.assertThat(result.get(1).getId()).isEqualTo(3L);
@@ -107,7 +112,7 @@ class StudentRepoCustomTest {
 
     @Test
     public void findByCertainGradeAtCertainDayShouldReturnEmptyListIfNoMatches() {
-
+        //Given
         TeacherEntity te = tec.saveTestTeacher();
         ClassYear cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
@@ -120,9 +125,10 @@ class StudentRepoCustomTest {
         createGrade(te, ste1, sue, GradeType.B, 5, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(3.00));
         createGrade(te, ste2, sue, GradeType.C, 4, LocalDate.parse("2022-11-18"), BigDecimal.valueOf(2.00));
 
-
+        //When
         List<StudentEntity> result = this.strepo.findAllByCertainGradeAtCertainDay(GradeType.D, LocalDate.parse("2022-11-18"));
 
+        //then
         Assertions.assertThat(result).isEmpty();
     }
 

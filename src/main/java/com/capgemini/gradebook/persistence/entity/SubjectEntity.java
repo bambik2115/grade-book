@@ -16,7 +16,7 @@ public class SubjectEntity extends AbstractEntity {
   private SubjectType subjectType;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  private TeacherEntity teacherEntity;  //Mozna zmienic nauczyciela
+  private TeacherEntity teacherEntity;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private ClassYear classYear;
@@ -28,12 +28,9 @@ public class SubjectEntity extends AbstractEntity {
     return this.name;
   }
 
-  public void setName() {
-
-    this.name = this.subjectType + "_" + this.classYear.getClassLevel() + this.classYear.getClassName();
-
+  public void setName(String name) {
+    this.name = name;
   }
-
   public SubjectType getSubjectType() {
     return this.subjectType;
   }
@@ -65,4 +62,7 @@ public class SubjectEntity extends AbstractEntity {
   public void setGradeList(List<Grade> gradeList) {
     this.gradeList = gradeList;
   }
+
 }
+
+

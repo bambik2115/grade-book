@@ -1,6 +1,7 @@
 package com.capgemini.gradebook;
 
 import com.capgemini.gradebook.persistence.entity.*;
+import com.capgemini.gradebook.persistence.entity.utils.SubjectUtils;
 import com.capgemini.gradebook.persistence.repo.*;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +50,7 @@ public class TestEntityCreator {
         suentity.setTeacherEntity(teacher);
         suentity.setClassYear(classyear);
         suentity.setSubjectType(SubjectType.BIOLOGY);
-        suentity.setName();
+        suentity.setName(SubjectUtils.setCustomName(classyear, suentity.getSubjectType()));
         return this.surepo.save(suentity);
     }
 

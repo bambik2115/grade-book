@@ -5,6 +5,7 @@ import com.capgemini.gradebook.domain.mapper.ClassYearMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
 import com.capgemini.gradebook.persistence.entity.ClassYear;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
+import com.capgemini.gradebook.persistence.entity.utils.SubjectUtils;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
 import com.capgemini.gradebook.persistence.repo.SubjectRepo;
 import com.capgemini.gradebook.service.ClassYearService;
@@ -83,7 +84,7 @@ public class ClassYearServiceImpl implements ClassYearService {
         this.classyearRepository.save(classyear);
         if(updateInfo.containsKey("className") || updateInfo.containsKey("classLevel")){
             List<SubjectEntity> subjects = this.subjectRepository.findAllStudentEntityByClassYearId(id);
-            subjects.forEach(subject -> subject.setName());
+            subjects.forEach(subject -> subject.setName(SubjectUtils.setCustomName(subject.getClassYear(), subject.getSubjectType())));
         }
 
         return ClassYearMapper.mapToETO(classyear);
