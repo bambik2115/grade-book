@@ -14,17 +14,17 @@ public class TeacherEntity extends AbstractEntity {
 
   //TODO IMPLEMENT: after creating subjectEntity and other subject classes uncomment the lines below, making necessary
   // adjustments; then generate getters and setters and fix the mappers
-  @OneToMany(mappedBy = "teacherEntity", fetch = FetchType.LAZY, cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
-  private List<SubjectEntity> subjectEntityList;
+  @OneToMany(mappedBy = "teacherEntity", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
+  private List<SubjectEntity> subjectList;
 
-  @OneToMany(mappedBy = "teacherEntity", fetch = FetchType.LAZY, cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
-  private List<Grade> gradeList;
+  @OneToMany(mappedBy = "teacherEntity", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
+  private List<GradeEntity> gradeList;
 
   //TODO IMPLEMENT: create @OneToMany with mappedBy to subjects after you create a base model
 
   @PreRemove
   public void removeIdFromGradeAndSubject() {
-    subjectEntityList.forEach(subject -> subject.setTeacherEntity(null));
+    subjectList.forEach(subject -> subject.setTeacherEntity(null));
     gradeList.forEach(grade -> grade.setTeacherEntity(null));
 
   }
@@ -53,12 +53,19 @@ public class TeacherEntity extends AbstractEntity {
   }
 
 
-  public List<SubjectEntity> getSubjectEntityList() {
-    return this.subjectEntityList;
+  public List<SubjectEntity> getSubjectList() {
+    return this.subjectList;
   }
 
-  public void setSubjectEntityList(List<SubjectEntity> subjectEntityList) {
-    this.subjectEntityList = subjectEntityList;
+  public void setSubjectList(List<SubjectEntity> subjectEntityList) {
+    this.subjectList = subjectEntityList;
   }
 
+  public List<GradeEntity> getGradeList() {
+    return this.gradeList;
+  }
+
+  public void setGradeList(List<GradeEntity> gradeEntityList) {
+    this.gradeList = gradeEntityList;
+  }
 }

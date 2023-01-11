@@ -3,7 +3,7 @@ package com.capgemini.gradebook.service.impl;
 import com.capgemini.gradebook.domain.ClassYearEto;
 import com.capgemini.gradebook.domain.mapper.ClassYearMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
-import com.capgemini.gradebook.persistence.entity.ClassYear;
+import com.capgemini.gradebook.persistence.entity.ClassYearEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.utils.SubjectUtils;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
@@ -26,24 +26,23 @@ import java.util.Set;
 public class ClassYearServiceImpl implements ClassYearService {
 
 
-    private final ClassYearRepo classyearRepository;
+    private final ClassYearRepo classYearRepository;
     private final SubjectRepo subjectRepository;
 
-
-    @Autowired
-    private Validator validator;
+    private final Validator validator;
 
 
     @Autowired
-    public ClassYearServiceImpl(final ClassYearRepo classyearRepository, final SubjectRepo subjectRepository) {
+    public ClassYearServiceImpl(final ClassYearRepo classYearRepository, final SubjectRepo subjectRepository, final Validator validator) {
 
-        this.classyearRepository = classyearRepository;
+        this.classYearRepository = classYearRepository;
         this.subjectRepository = subjectRepository;
+        this.validator = validator;
     }
 
     @Override
     public ClassYearEto findClassYearById(Long id) {
-        ClassYear result = this.classyearRepository.findById(id)
+        ClassYearEntity result = this.classYearRepository.findById(id)
                 .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + id + " could not be found"));
 
         return ClassYearMapper.mapToETO(result);
@@ -60,38 +59,40 @@ public class ClassYearServiceImpl implements ClassYearService {
             StringBuilder sb = new StringBuilder();
             for (ConstraintViolation<ClassYearEto> constraintViolation : violations) {
                 sb.append(constraintViolation.getMessage());
+                sb.append("\n");
             }
             throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
         }
 
-        ClassYear classyearEntity = ClassYearMapper.mapToEntity(newClassYear);
-        classyearEntity = this.classyearRepository.save(classyearEntity);
-        return ClassYearMapper.mapToETO(classyearEntity);
+        ClassYearEntity classYearEntity = ClassYearMapper.mapToEntity(newClassYear);
+        classYearEntity = this.classYearRepository.save(classYearEntity);
+        return ClassYearMapper.mapToETO(classYearEntity);
     }
 
     @Transactional
     @Override
     public ClassYearEto partialUpdate(Long id, Map<String, Object> updateInfo) {
 
-        ClassYear classyear = this.classyearRepository.findById(id).get();
-        ClassYearEto classyeareto = ClassYearMapper.mapToETO(classyear);
+        ClassYearEntity classYear = this.classYearRepository.findById(id)
+                .orElseThrow(() -> new ClassYearNotFoundException("ClassYear with id: " + id + " could not be found"));
+        ClassYearEto classYearEto = ClassYearMapper.mapToETO(classYear);
         updateInfo.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(ClassYearEto.class, key);
             field.setAccessible(true);
-            ReflectionUtils.setField(field, classyeareto, value);
+            ReflectionUtils.setField(field, classYearEto, value);
         });
-        classyear = ClassYearMapper.mapToEntity(classyeareto);
-        this.classyearRepository.save(classyear);
+        classYear = ClassYearMapper.mapToEntity(classYearEto);
+        this.classYearRepository.save(classYear);
         if(updateInfo.containsKey("className") || updateInfo.containsKey("classLevel")){
-            List<SubjectEntity> subjects = this.subjectRepository.findAllStudentEntityByClassYearId(id);
+            List<SubjectEntity> subjects = this.subjectRepository.findAllStudentEntityByClassYearEntityId(id);
             subjects.forEach(subject -> subject.setName(SubjectUtils.setCustomName(subject.getClassYear(), subject.getSubjectType())));
         }
 
-        return ClassYearMapper.mapToETO(classyear);
+        return ClassYearMapper.mapToETO(classYear);
     }
 
     @Override
     public void delete(Long id) {
-        this.classyearRepository.deleteById(id);
+        this.classYearRepository.deleteById(id);
     }
 }

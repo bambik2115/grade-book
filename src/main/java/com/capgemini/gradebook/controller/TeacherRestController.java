@@ -19,13 +19,11 @@ import java.util.Optional;
 public class TeacherRestController {
 
   private final TeacherService teacherService;
-  private final SubjectService subjectService;
 
   @Autowired
-  public TeacherRestController(final TeacherService teacherService, final SubjectService subjectService) {
+  public TeacherRestController(final TeacherService teacherService) {
 
     this.teacherService = teacherService;
-    this.subjectService = subjectService;
   }
 
   @GetMapping("/teachers/getAll")
@@ -59,18 +57,18 @@ public class TeacherRestController {
     //TODO IMPLEMENT: Post should always create a new entry in database. Add a new SERVICE method that ensures by
     // either throwing an exception if ID is present, or removing the given ID from ETO before save. Currently, this
     // method  may also be used to update existing entities (DONE)
-    return teacherService.createNew(newTeacher);
+    return this.teacherService.createNew(newTeacher);
   }
 
   @PatchMapping("/teachers/update/{id}")
-  TeacherEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
-    return teacherService.partialUpdate(id, updateInfo);
+  public TeacherEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
+    return this.teacherService.partialUpdate(id, updateInfo);
   }
 
 
   @DeleteMapping("/teachers/delete/{id}")
   void deleteTeacher(@PathVariable Long id, @RequestBody Optional<Long> newTeacherId) {
-    teacherService.delete(id, newTeacherId);
+    this.teacherService.delete(id, newTeacherId);
   }
 
 }

@@ -24,25 +24,25 @@ public class ClassYearRestController {
     @GetMapping("/classyear/get/{id}")
     public ResponseEntity<ClassYearEto> findClassYearById(@PathVariable("id") final Long id) {
 
-        final ClassYearEto classyear = this.classYearService.findClassYearById(id);
-        return ResponseEntity.ok().body(classyear);
+        final ClassYearEto classYear = this.classYearService.findClassYearById(id);
+        return ResponseEntity.ok().body(classYear);
     }
 
     @PostMapping("/classyear/new")
     public ClassYearEto addClassYear(@RequestBody ClassYearEto newClassYear) {
 
-        return classYearService.createNew(newClassYear);
+        return this.classYearService.createNew(newClassYear);
     }
 
     @PatchMapping("/classyear/update/{id}")
-    ClassYearEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
+    public ClassYearEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo) {
 
-        return classYearService.partialUpdate(id, updateInfo);
+        return this.classYearService.partialUpdate(id, updateInfo);
     }
 
     @DeleteMapping("/classyear/delete/{id}")
     void deleteClassYear(@PathVariable Long id) {
-        classYearService.delete(id);
+        this.classYearService.delete(id);
     }
 
 

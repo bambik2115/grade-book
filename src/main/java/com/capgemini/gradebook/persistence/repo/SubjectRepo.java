@@ -11,7 +11,7 @@ public interface SubjectRepo extends JpaRepository<SubjectEntity, Long>, Subject
 
     List<SubjectEntity> findAllByTeacherEntityIdIsNull();
 
-    List<SubjectEntity> findAllStudentEntityByClassYearId(Long id);
+    List<SubjectEntity> findAllStudentEntityByClassYearEntityId(Long id);
 
     List<SubjectEntity> findAllByTeacherEntityId(Long id);
 }

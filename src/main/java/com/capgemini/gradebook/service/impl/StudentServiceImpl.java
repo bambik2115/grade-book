@@ -6,7 +6,7 @@ import com.capgemini.gradebook.domain.StudentEto;
 import com.capgemini.gradebook.domain.mapper.StudentMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
 import com.capgemini.gradebook.exceptions.StudentNotFoundException;
-import com.capgemini.gradebook.persistence.entity.ClassYear;
+import com.capgemini.gradebook.persistence.entity.ClassYearEntity;
 import com.capgemini.gradebook.persistence.entity.StudentEntity;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
 import com.capgemini.gradebook.persistence.repo.StudentRepo;
@@ -28,25 +28,25 @@ import java.util.Set;
 @Service
 public class StudentServiceImpl implements StudentService {
 
-    private final ClassYearRepo classyearRepository;
+    private final ClassYearRepo classYearRepository;
     private final StudentRepo studentRepository;
+    
+    private final Validator validator;
+
 
     @Autowired
-    private Validator validator;
-
-
-    @Autowired
-    public StudentServiceImpl(final ClassYearRepo classyearRepository, final StudentRepo studentRepository) {
+    public StudentServiceImpl(final ClassYearRepo classYearRepository, final StudentRepo studentRepository, final Validator validator) {
 
         this.studentRepository = studentRepository;
-        this.classyearRepository = classyearRepository;
+        this.classYearRepository = classYearRepository;
+        this.validator = validator;
     }
 
 
     @Override
     public StudentEto findStudentById(Long id) {
 
-        StudentEntity entity = studentRepository.findById(id)
+        StudentEntity entity = this.studentRepository.findById(id)
                 .orElseThrow( ()-> new StudentNotFoundException("Student with id: " + id + " could not be found"));
 
         return StudentMapper.mapToETO(entity);
@@ -77,19 +77,20 @@ public class StudentServiceImpl implements StudentService {
             newStudent.setId(null);
         }
 
-        Set<ConstraintViolation<StudentEto>> violations = validator.validate(newStudent);
+        Set<ConstraintViolation<StudentEto>> violations = this.validator.validate(newStudent);
         if (!violations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (ConstraintViolation<StudentEto> constraintViolation : violations) {
                 sb.append(constraintViolation.getMessage());
+                sb.append("\n");
             }
             throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
         }
 
-        ClassYear classyear = classyearRepository.findById(newStudent.getClassYearId())
-                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newStudent.getClassYearId() + " could not be found"));
+        ClassYearEntity classYear = this.classYearRepository.findById(newStudent.getClassYearEntityId())
+                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newStudent.getClassYearEntityId() + " could not be found"));
         StudentEntity student = StudentMapper.mapToEntity(newStudent);
-        student.setClassYear(classyear);
+        student.setClassYearEntity(classYear);
         student = this.studentRepository.save(student);
 
         return StudentMapper.mapToETO(student);
@@ -100,21 +101,22 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentEto partialUpdate(Long id, Map<String, Object> updateInfo){
 
-        StudentEntity student = studentRepository.findById(id).get();
-        StudentEto studenteto = StudentMapper.mapToETO(student);
+        StudentEntity student = this.studentRepository.findById(id)
+                .orElseThrow(() -> new StudentNotFoundException("Student with id: " + id + " could not be found"));
+        StudentEto studentEto = StudentMapper.mapToETO(student);
         updateInfo.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(StudentEto.class, key);
             field.setAccessible(true);
             if(key.equals("classYearId"))
-                ReflectionUtils.setField(field, studenteto, Long.valueOf((Integer) value));
+                ReflectionUtils.setField(field, studentEto, Long.valueOf((Integer) value));
             else
-                ReflectionUtils.setField(field, studenteto, value);
+                ReflectionUtils.setField(field, studentEto, value);
         });
-        student = StudentMapper.mapToEntity(studenteto);
-        ClassYear classyear = classyearRepository.findById(studenteto.getClassYearId())
-                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + studenteto.getClassYearId() + " could not be found"));
-        student.setClassYear(classyear);
-        studentRepository.save(student);
+        student = StudentMapper.mapToEntity(studentEto);
+        ClassYearEntity classYear = this.classYearRepository.findById(studentEto.getClassYearEntityId())
+                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + studentEto.getClassYearEntityId() + " could not be found"));
+        student.setClassYearEntity(classYear);
+        this.studentRepository.save(student);
 
         return StudentMapper.mapToETO(student);
 

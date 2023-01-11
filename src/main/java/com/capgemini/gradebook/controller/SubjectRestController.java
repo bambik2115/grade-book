@@ -30,17 +30,17 @@ public class SubjectRestController {
     @PostMapping("/subjects/new")
     public SubjectEto addSubject(@RequestBody SubjectEto newSubject) {
 
-        return subjectService.createNew(newSubject);
+        return this.subjectService.createNew(newSubject);
     }
 
     @PatchMapping("/subjects/update/{id}")
     public SubjectEto updateSubjectTeacher(@PathVariable("id") final Long id, @RequestBody Long newTeacherId) {
 
-        return subjectService.updateSubjectTeacher(id, newTeacherId);
+        return this.subjectService.updateSubjectTeacher(id, newTeacherId);
     }
 
     @DeleteMapping("/subjects/delete/{id}")
     void deleteSubject(@PathVariable Long id) {
-        subjectService.delete(id);
+        this.subjectService.delete(id);
     }
 }

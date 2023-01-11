@@ -5,7 +5,7 @@ import com.capgemini.gradebook.domain.GradeEto;
 import com.capgemini.gradebook.domain.GradeSearchCriteria;
 import com.capgemini.gradebook.domain.mapper.GradeMapper;
 import com.capgemini.gradebook.exceptions.*;
-import com.capgemini.gradebook.persistence.entity.Grade;
+import com.capgemini.gradebook.persistence.entity.GradeEntity;
 import com.capgemini.gradebook.persistence.entity.StudentEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.repo.GradeRepo;
@@ -35,22 +35,21 @@ public class GradeServiceImpl implements GradeService {
     private final StudentRepo studentRepository;
     private final SubjectRepo subjectRepository;
 
+    private final Validator validator;
 
     @Autowired
-    private Validator validator;
-
-    @Autowired
-    public GradeServiceImpl(final GradeRepo gradeRepository, final StudentRepo studentRepository, final SubjectRepo subjectRepository) {
+    public GradeServiceImpl(final GradeRepo gradeRepository, final StudentRepo studentRepository, final SubjectRepo subjectRepository, final Validator validator) {
 
         this.gradeRepository = gradeRepository;
         this.studentRepository = studentRepository;
         this.subjectRepository = subjectRepository;
+        this.validator = validator;
     }
 
     @Override
     public GradeEto findGradeById(Long id) {
 
-        Grade grade = this.gradeRepository.findById(id)
+        GradeEntity grade = this.gradeRepository.findById(id)
                 .orElseThrow( ()-> new GradeNotFoundException("Grade with id: " + id + " could not be found"));
 
         return GradeMapper.mapToETO(grade);
@@ -69,7 +68,7 @@ public class GradeServiceImpl implements GradeService {
             throw new InvalidRangeProvidedException(("Grade weight To can't be lower than From"));
         }
 
-        List<Grade> foundGrades = this.gradeRepository.findByCriteria(criteria);
+        List<GradeEntity> foundGrades = this.gradeRepository.findByCriteria(criteria);
 
         return GradeMapper.mapToETOList(foundGrades);
     }
@@ -78,7 +77,7 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public Double getWeightedAverage(Long studentId, Long subjectId) {
 
-        List<Grade> studentGradeList = this.gradeRepository.findAllGradeByStudentEntityIdAndSubjectEntityId(studentId, subjectId);
+        List<GradeEntity> studentGradeList = this.gradeRepository.findAllGradeByStudentEntityIdAndSubjectEntityId(studentId, subjectId);
         Double sumOfGrades = studentGradeList.stream().mapToDouble(grade -> grade.getValue()*grade.getWeight().doubleValue()).reduce(0, Double::sum);
         Double totalNumberOfGrades = studentGradeList.stream().mapToDouble(grade -> grade.getWeight().intValue()).reduce(0, Double::sum);
 
@@ -92,11 +91,12 @@ public class GradeServiceImpl implements GradeService {
             newGrade.setId(null);
         }
 
-        Set<ConstraintViolation<GradeEto>> violations = validator.validate(newGrade);
+        Set<ConstraintViolation<GradeEto>> violations = this.validator.validate(newGrade);
         if (!violations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (ConstraintViolation<GradeEto> constraintViolation : violations) {
                 sb.append(constraintViolation.getMessage());
+                sb.append("\n");
             }
             throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
         }
@@ -113,7 +113,7 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow( ()-> new StudentNotFoundException("Student with id: " + newGrade.getStudentEntityId() + " could not be found"));
         SubjectEntity subject = this.subjectRepository.findById(newGrade.getSubjectEntityId())
                 .orElseThrow( ()-> new SubjectNotFoundException("Subject with id: " + newGrade.getSubjectEntityId() + " could not be found"));
-        Grade grade = GradeMapper.mapToEntity(newGrade);
+        GradeEntity grade = GradeMapper.mapToEntity(newGrade);
         grade.setTeacherEntity(subject.getTeacherEntity());
         grade.setStudentEntity(student);
         grade.setSubjectEntity(subject);
@@ -127,21 +127,22 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public GradeEto partialUpdate(Long id, Map<String, Object> updateInfo) {
 
-        Grade grade = this.gradeRepository.findById(id).get();
-        GradeEto gradeeto = GradeMapper.mapToETO(grade);
+        GradeEntity grade = this.gradeRepository.findById(id)
+                .orElseThrow(() -> new GradeNotFoundException("Grade with id: " + id + " could not be found"));
+        GradeEto gradeEto = GradeMapper.mapToETO(grade);
         updateInfo.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(GradeEto.class, key);
             field.setAccessible(true);
             if(key.equals("subjectEntityId") || key.equals("studentEntityId"))
-                ReflectionUtils.setField(field, gradeeto, Long.valueOf((Integer) value));
+                ReflectionUtils.setField(field, gradeEto, Long.valueOf((Integer) value));
             else
-                ReflectionUtils.setField(field, gradeeto, value);
+                ReflectionUtils.setField(field, gradeEto, value);
         });
-        grade = GradeMapper.mapToEntity(gradeeto);
-        StudentEntity student = this.studentRepository.findById(gradeeto.getStudentEntityId())
-                .orElseThrow( ()-> new StudentNotFoundException("Student with id: " + gradeeto.getStudentEntityId() + " could not be found"));
-        SubjectEntity subject = this.subjectRepository.findById(gradeeto.getSubjectEntityId())
-                .orElseThrow( ()-> new SubjectNotFoundException("Subject with id: " + gradeeto.getSubjectEntityId() + " could not be found"));
+        grade = GradeMapper.mapToEntity(gradeEto);
+        StudentEntity student = this.studentRepository.findById(gradeEto.getStudentEntityId())
+                .orElseThrow( ()-> new StudentNotFoundException("Student with id: " + gradeEto.getStudentEntityId() + " could not be found"));
+        SubjectEntity subject = this.subjectRepository.findById(gradeEto.getSubjectEntityId())
+                .orElseThrow( ()-> new SubjectNotFoundException("Subject with id: " + gradeEto.getSubjectEntityId() + " could not be found"));
         grade.setSubjectEntity(subject);
         grade.setStudentEntity(student);
         grade.setTeacherEntity(subject.getTeacherEntity());
@@ -156,9 +157,9 @@ public class GradeServiceImpl implements GradeService {
     }
 
 
-    private Optional<Grade> gradeCreatedToday(GradeEto gradeeto) {
+    private Optional<GradeEntity> gradeCreatedToday(GradeEto gradeEto) {
         return this.gradeRepository
                 .findGradeByDateOfGradeAndGradeType
-                        (gradeeto.getDateOfGrade(), gradeeto.getGradeType());
+                        (gradeEto.getDateOfGrade(), gradeEto.getGradeType());
     }
 }

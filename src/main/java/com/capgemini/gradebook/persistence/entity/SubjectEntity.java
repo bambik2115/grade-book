@@ -7,7 +7,7 @@ import java.util.List;
 @Table(name = "SUBJECT")
 public class SubjectEntity extends AbstractEntity {
 
-  //TODO IMPLEMENT: this should be saved as a concatenation of subjectType and classyear value
+  //TODO IMPLEMENT: this should be saved as a concatenation of subjectType and classYear value
   private String name;
 
   //TODO IMPLEMENT: no implementing here, but google why its better to persist enum values in the database in form of
@@ -19,10 +19,10 @@ public class SubjectEntity extends AbstractEntity {
   private TeacherEntity teacherEntity;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  private ClassYear classYear;
+  private ClassYearEntity classYearEntity;
 
-  @OneToMany(mappedBy = "subjectEntity", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-  private List<Grade> gradeList;
+  @OneToMany(mappedBy = "subjectEntity", cascade = CascadeType.REMOVE)
+  private List<GradeEntity> gradeList;
 
   public String getName() {
     return this.name;
@@ -47,19 +47,19 @@ public class SubjectEntity extends AbstractEntity {
     this.teacherEntity = teacherEntity;
   }
 
-  public ClassYear getClassYear() {
-    return this.classYear;
+  public ClassYearEntity getClassYear() {
+    return this.classYearEntity;
   }
 
-  public void setClassYear(ClassYear classYear) {
-    this.classYear = classYear;
+  public void setClassYear(ClassYearEntity classYearEntity) {
+    this.classYearEntity = classYearEntity;
   }
 
-  public List<Grade> getGradeList() {
+  public List<GradeEntity> getGradeList() {
     return this.gradeList;
   }
 
-  public void setGradeList(List<Grade> gradeList) {
+  public void setGradeList(List<GradeEntity> gradeList) {
     this.gradeList = gradeList;
   }
 

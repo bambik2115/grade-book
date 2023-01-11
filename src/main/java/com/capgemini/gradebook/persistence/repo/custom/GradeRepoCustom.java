@@ -1,12 +1,12 @@
 package com.capgemini.gradebook.persistence.repo.custom;
 
 import com.capgemini.gradebook.domain.GradeSearchCriteria;
-import com.capgemini.gradebook.persistence.entity.Grade;
+import com.capgemini.gradebook.persistence.entity.GradeEntity;
 
 import java.util.List;
 
 public interface GradeRepoCustom {
 
-    List<Grade> findByCriteria(GradeSearchCriteria criteria);
+    List<GradeEntity> findByCriteria(GradeSearchCriteria criteria);
 
 }

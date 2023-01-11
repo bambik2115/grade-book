@@ -44,18 +44,18 @@ public class StudentRestController {
     @PostMapping("/students/new")
     public StudentEto addStudent(@RequestBody StudentEto newStudent) {
 
-        return studentService.createNew(newStudent);
+        return this.studentService.createNew(newStudent);
     }
 
     @PatchMapping("/students/update/{id}")
     public StudentEto partialUpdate(@PathVariable("id") final Long id, @RequestBody Map<String, Object> updateInfo)  {
 
-        return studentService.partialUpdate(id, updateInfo);
+        return this.studentService.partialUpdate(id, updateInfo);
     }
 
     @DeleteMapping("/students/delete/{id}")
     void deleteStudent(@PathVariable Long id) {
-        studentService.delete(id);
+        this.studentService.delete(id);
     }
 
 

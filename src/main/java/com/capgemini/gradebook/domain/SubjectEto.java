@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 
 public class SubjectEto extends AbstractEto {
 
-    @Enumerated(EnumType.STRING)
     @NotNull
     private SubjectType subjectType;
 
@@ -16,7 +15,7 @@ public class SubjectEto extends AbstractEto {
     private Long teacherEntityId;
 
     @NotNull
-    private Long classYearId;
+    private Long classYearEntityId;
 
     public SubjectType getSubjectType() {
         return this.subjectType;
@@ -34,11 +33,11 @@ public class SubjectEto extends AbstractEto {
         this.teacherEntityId = teacherEntityId;
     }
 
-    public Long getClassYearId() {
-        return this.classYearId;
+    public Long getClassYearEntityId() {
+        return this.classYearEntityId;
     }
 
-    public void setClassYearId(Long classYearId) {
-        this.classYearId = classYearId;
+    public void setClassYearEntityId(Long classYearId) {
+        this.classYearEntityId = classYearId;
     }
 }

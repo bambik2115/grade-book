@@ -16,7 +16,7 @@ public final class StudentMapper {
         student.setVersion(entity.getVersion());
         student.setCreateDate(entity.getCreateDate());
         student.setUpdateDate(entity.getUpdateDate());
-        student.setClassYearId(entity.getClassYear().getId());
+        student.setClassYearEntityId(entity.getClassYearEntity().getId());
         student.setFirstName(entity.getFirstName());
         student.setLastName(entity.getLastName());
         student.setAge(entity.getAge());

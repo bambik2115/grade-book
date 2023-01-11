@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "CLASS_YEAR")
-public class ClassYear extends AbstractEntity {
+public class ClassYearEntity extends AbstractEntity {
 
     private Integer classLevel;
     private String className;
@@ -15,16 +15,16 @@ public class ClassYear extends AbstractEntity {
 
     @PreRemove
     public void checkStudentsBeforeRemove() {
-        if (!this.classYearStudentList.isEmpty()) {
+        if (!this.studentList.isEmpty()) {
             throw new RuntimeException("Can't remove a ClassYear that has students.");
         }
     }
 
-    @OneToMany(mappedBy = "classYear", fetch = FetchType.LAZY, cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
-    private List<StudentEntity> classYearStudentList;
+    @OneToMany(mappedBy = "classYearEntity", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST })
+    private List<StudentEntity> studentList;
 
-    @OneToMany(mappedBy = "classYear", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<SubjectEntity> classYearSubjectList;
+    @OneToMany(mappedBy = "classYearEntity", cascade = CascadeType.REMOVE)
+    private List<SubjectEntity> subjectList;
 
     public Integer getClassLevel() {
         return this.classLevel;
@@ -48,5 +48,22 @@ public class ClassYear extends AbstractEntity {
 
     public void setClassYear(String classYear) {
         this.classYear = classYear;
+    }
+
+
+    public List<StudentEntity> getStudentList() {
+        return this.studentList;
+    }
+
+    public void setStudentList(List<StudentEntity> studentList) {
+        this.studentList = studentList;
+    }
+
+    public List<SubjectEntity> getSubjectList() {
+        return this.subjectList;
+    }
+
+    public void setSubjectList(List<SubjectEntity> subjectList) {
+        this.subjectList = subjectList;
     }
 }

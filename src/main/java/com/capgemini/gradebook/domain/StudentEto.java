@@ -5,7 +5,7 @@ import javax.validation.constraints.NotNull;
 public class StudentEto extends AbstractEto {
 
     @NotNull
-    private Long classYearId;
+    private Long classYearEntityId;
 
     private Integer age;
 
@@ -14,12 +14,12 @@ public class StudentEto extends AbstractEto {
     private String lastName;
 
 
-    public Long getClassYearId() {
-        return this.classYearId;
+    public Long getClassYearEntityId() {
+        return this.classYearEntityId;
     }
 
-    public void setClassYearId(Long classYearId) {
-        this.classYearId = classYearId;
+    public void setClassYearEntityId(Long classYearId) {
+        this.classYearEntityId = classYearId;
     }
 
     public Integer getAge() {

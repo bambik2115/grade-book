@@ -18,7 +18,6 @@ public class GradeEto extends AbstractEto {
     @Range(min = 1, max = 9, message = "Grade weight must be between 1 and 9")
     private BigDecimal weight;
 
-    @Enumerated(EnumType.STRING)
     private GradeType gradeType;
 
     private String comment;

@@ -5,7 +5,7 @@ import com.capgemini.gradebook.domain.mapper.SubjectMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
 import com.capgemini.gradebook.exceptions.SubjectNotFoundException;
 import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
-import com.capgemini.gradebook.persistence.entity.ClassYear;
+import com.capgemini.gradebook.persistence.entity.ClassYearEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
 import com.capgemini.gradebook.persistence.entity.utils.SubjectUtils;
@@ -29,18 +29,18 @@ public class SubjectServiceImpl implements SubjectService {
 
     private final SubjectRepo subjectRepository;
     private final TeacherRepo teacherRepository;
-    private final ClassYearRepo classyearRepository;
+    private final ClassYearRepo classYearRepository;
+
+    private final Validator validator;
+
 
     @Autowired
-    private Validator validator;
-
-
-    @Autowired
-    public SubjectServiceImpl(final SubjectRepo subjectRepository, final TeacherRepo teacherRepository, final ClassYearRepo classyearRepository) {
+    public SubjectServiceImpl(final SubjectRepo subjectRepository, final TeacherRepo teacherRepository, final ClassYearRepo classYearRepository, final Validator validator) {
 
         this.subjectRepository = subjectRepository;
         this.teacherRepository = teacherRepository;
-        this.classyearRepository = classyearRepository;
+        this.classYearRepository = classYearRepository;
+        this.validator = validator;
     }
 
     @Override
@@ -59,11 +59,12 @@ public class SubjectServiceImpl implements SubjectService {
             newSubject.setId(null);
         }
 
-        Set<ConstraintViolation<SubjectEto>> violations = validator.validate(newSubject);
+        Set<ConstraintViolation<SubjectEto>> violations = this.validator.validate(newSubject);
         if (!violations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (ConstraintViolation<SubjectEto> constraintViolation : violations) {
                 sb.append(constraintViolation.getMessage());
+                sb.append("\n");
             }
             throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
         }
@@ -71,11 +72,11 @@ public class SubjectServiceImpl implements SubjectService {
         SubjectEntity subjectEntity = SubjectMapper.mapToEntity(newSubject);
         TeacherEntity teacher = this.teacherRepository.findById(newSubject.getTeacherEntityId())
                 .orElseThrow( ()-> new TeacherNotFoundException("Teacher with id: " + newSubject.getTeacherEntityId() + " could not be found"));
-        ClassYear classyear = this.classyearRepository.findById(newSubject.getClassYearId())
-                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newSubject.getClassYearId() + " could not be found"));
+        ClassYearEntity classYear = this.classYearRepository.findById(newSubject.getClassYearEntityId())
+                .orElseThrow( ()-> new ClassYearNotFoundException("ClassYear with id: " + newSubject.getClassYearEntityId() + " could not be found"));
         subjectEntity.setTeacherEntity(teacher);
-        subjectEntity.setClassYear(classyear);
-        subjectEntity.setName(SubjectUtils.setCustomName(classyear, newSubject.getSubjectType()));
+        subjectEntity.setClassYear(classYear);
+        subjectEntity.setName(SubjectUtils.setCustomName(classYear, newSubject.getSubjectType()));
         subjectEntity = this.subjectRepository.save(subjectEntity);
         return SubjectMapper.mapToETO(subjectEntity);
     }
@@ -84,7 +85,8 @@ public class SubjectServiceImpl implements SubjectService {
     @Override
     public SubjectEto updateSubjectTeacher(Long id, Long newTeacherId) {
 
-        SubjectEntity subject = this.subjectRepository.findById(id).get();
+        SubjectEntity subject = this.subjectRepository.findById(id)
+                .orElseThrow(() -> new SubjectNotFoundException("Subject with id: " + id + " could not be found"));
         TeacherEntity teacher = this.teacherRepository.findById(newTeacherId)
                 .orElseThrow( ()-> new TeacherNotFoundException("Teacher with id: " + newTeacherId + " could not be found"));
         subject.setTeacherEntity(teacher);

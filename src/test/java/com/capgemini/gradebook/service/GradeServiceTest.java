@@ -34,7 +34,7 @@ class GradeServiceTest {
     private TestEntityCreator tec;
 
     @Inject
-    private GradeRepo grepo;
+    private GradeRepo gRepo;
 
     @AfterEach
     private void cleanDbBetweenTests() {
@@ -47,7 +47,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -65,7 +65,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -82,7 +82,7 @@ class GradeServiceTest {
     public void searchGradeByCriteriaShouldReturnGradesIfFound() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -113,7 +113,7 @@ class GradeServiceTest {
     public void searchGradeByCriteriaShouldReturnEmptyListIfNotFound() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -141,7 +141,7 @@ class GradeServiceTest {
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidDateRangeProvided() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -167,7 +167,7 @@ class GradeServiceTest {
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidValueRangeProvided() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -193,7 +193,7 @@ class GradeServiceTest {
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidWeightRangeProvided() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -218,7 +218,7 @@ class GradeServiceTest {
     public void getWeightedAverageShouldReturnCorrectRoundedToUpperValue() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -236,7 +236,7 @@ class GradeServiceTest {
     public void getWeightedAverageShouldReturnCorrectRoundedToLowerValue() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
@@ -256,7 +256,7 @@ class GradeServiceTest {
 
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te,ste,sue);
@@ -279,7 +279,7 @@ class GradeServiceTest {
     public void createNewShouldReturnInstanceOfClassYearEto() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -301,7 +301,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -326,7 +326,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -351,7 +351,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -377,7 +377,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
@@ -403,7 +403,7 @@ class GradeServiceTest {
     public void createNewGradeWithValueNotBetween1And6ShouldThrowException() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -427,7 +427,7 @@ class GradeServiceTest {
     public void createNewGradeWithWeightNotBetween1And9ShouldThrowException() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -453,7 +453,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -476,7 +476,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -499,7 +499,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -520,7 +520,7 @@ class GradeServiceTest {
     public void createNewShouldThrowExceptionWhenStudentEntityIdNotProvided() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -542,7 +542,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -564,7 +564,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         tec.saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
@@ -587,7 +587,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestStudent(cy);
@@ -608,14 +608,14 @@ class GradeServiceTest {
     public void partialUpdateShouldReturnStudentWithNewValues() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
 
-        Integer oldValue = this.grepo.findById(1L).get().getValue();
-        Long oldStudentEntityId = this.grepo.findById(1L).get().getStudentEntity().getId();
+        Integer oldValue = gRepo.findById(1L).get().getValue();
+        Long oldStudentEntityId = gRepo.findById(1L).get().getStudentEntity().getId();
 
         Map<String, Object> info = new HashMap<>();
         info.put("value", 3);
@@ -624,8 +624,8 @@ class GradeServiceTest {
         //when
         GradeEto gradeEto = gradeService.partialUpdate(1L, info);
 
-        Integer newValue = this.grepo.findById(1L).get().getValue();
-        Long newStudentEntityId = this.grepo.findById(1L).get().getStudentEntity().getId();
+        Integer newValue = gRepo.findById(1L).get().getValue();
+        Long newStudentEntityId = gRepo.findById(1L).get().getStudentEntity().getId();
 
         //then
         Assertions.assertThat(oldValue).isNotEqualTo(newValue);
@@ -639,7 +639,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -663,7 +663,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -687,7 +687,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -710,7 +710,7 @@ class GradeServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         tec.saveTestGrade(te, ste, sue);
@@ -718,7 +718,7 @@ class GradeServiceTest {
         //when
         gradeService.delete(1L);
 
-        List<Grade> grades = this.grepo.findAll();
+        List<GradeEntity> grades = this.gRepo.findAll();
 
         //then
         Assertions.assertThat(grades).isEmpty();
@@ -726,7 +726,7 @@ class GradeServiceTest {
 
 
     private void createGrade(TeacherEntity te, StudentEntity ste, SubjectEntity sue, GradeType gt, Integer val, LocalDate date, BigDecimal wg) {
-        Grade grade = new Grade();
+        GradeEntity grade = new GradeEntity();
         grade.setSubjectEntity(sue);
         grade.setStudentEntity(ste);
         grade.setTeacherEntity(te);
@@ -734,7 +734,7 @@ class GradeServiceTest {
         grade.setValue(val);
         grade.setDateOfGrade(date);
         grade.setWeight(wg);
-        this.grepo.save(grade);
+        gRepo.save(grade);
     }
 
 }

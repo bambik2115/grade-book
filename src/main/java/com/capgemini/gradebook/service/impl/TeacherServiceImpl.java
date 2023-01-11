@@ -2,9 +2,10 @@ package com.capgemini.gradebook.service.impl;
 
 import com.capgemini.gradebook.domain.TeacherEto;
 import com.capgemini.gradebook.domain.mapper.TeacherMapper;
+import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
 import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
 import com.capgemini.gradebook.exceptions.TeacherStillInUseException;
-import com.capgemini.gradebook.persistence.entity.Grade;
+import com.capgemini.gradebook.persistence.entity.GradeEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
 import com.capgemini.gradebook.persistence.repo.GradeRepo;
@@ -54,7 +55,7 @@ public class TeacherServiceImpl implements TeacherService {
   public List<String> getSubjects(Long id) {
     final TeacherEntity result = this.teacherRepository.findById(id)
             .orElseThrow( ()-> new TeacherNotFoundException("Teacher with id: " + id + " could not be found"));
-    return result.getSubjectEntityList().stream().map(SubjectEntity::getName).collect(Collectors.toList());
+    return result.getSubjectList().stream().map(SubjectEntity::getName).collect(Collectors.toList());
   }
 
   @Override
@@ -79,14 +80,15 @@ public class TeacherServiceImpl implements TeacherService {
   @Override
   public TeacherEto partialUpdate(Long id, Map<String, Object> updateInfo) {
 
-    TeacherEntity teacher = this.teacherRepository.findById(id).get();
-    TeacherEto teachereto = TeacherMapper.mapToETO(teacher);
+    TeacherEntity teacher = this.teacherRepository.findById(id)
+            .orElseThrow(() -> new TeacherNotFoundException("Teacher with id: " + id + " could not be found"));
+    TeacherEto teacherEto = TeacherMapper.mapToETO(teacher);
     updateInfo.forEach((key, value) -> {
       Field field = ReflectionUtils.findField(TeacherEto.class, key);
       field.setAccessible(true);
-      ReflectionUtils.setField(field, teachereto, value);
+      ReflectionUtils.setField(field, teacherEto, value);
     });
-    teacher = TeacherMapper.mapToEntity(teachereto);
+    teacher = TeacherMapper.mapToEntity(teacherEto);
     this.teacherRepository.save(teacher);
 
     return TeacherMapper.mapToETO(teacher);
@@ -104,7 +106,7 @@ public class TeacherServiceImpl implements TeacherService {
               .orElseThrow(() -> new TeacherNotFoundException("Teacher with id: " + newTeacherId.get() + " could not be found"));
       List<SubjectEntity> subjects = this.subjectRepository.findAllByTeacherEntityIdIsNull();
       subjects.forEach(subject -> subject.setTeacherEntity(entity));
-      List<Grade> grades = this.gradeRepository.findAllByTeacherEntityIdIsNull();
+      List<GradeEntity> grades = this.gradeRepository.findAllByTeacherEntityIdIsNull();
       grades.forEach(grade -> grade.setTeacherEntity(entity));
     }
     else if(!teacherInUse.isEmpty()) {

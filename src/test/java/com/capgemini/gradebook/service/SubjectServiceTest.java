@@ -33,10 +33,10 @@ class SubjectServiceTest {
     private TestEntityCreator tec;
 
     @Inject
-    private SubjectRepo surepo;
+    private SubjectRepo suRepo;
 
     @Inject
-    private GradeRepo grepo;
+    private GradeRepo gRepo;
 
     @AfterEach
     private void cleanDbBetweenTests() {
@@ -48,7 +48,7 @@ class SubjectServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
 
         //when
@@ -64,7 +64,7 @@ class SubjectServiceTest {
 
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
@@ -80,12 +80,12 @@ class SubjectServiceTest {
 
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setId(1L);
         subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
 
         //When
@@ -102,7 +102,7 @@ class SubjectServiceTest {
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
         //when
         SubjectEto result = subjectService.createNew(subjectEto);
@@ -117,7 +117,7 @@ class SubjectServiceTest {
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
         //when
         SubjectEto result = subjectService.createNew(subjectEto);
@@ -131,13 +131,13 @@ class SubjectServiceTest {
         //given
         tec.saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setTeacherEntityId(1L);
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    this.subjectService.createNew(subjectEto);
+                    subjectService.createNew(subjectEto);
                     //then
                 }).isInstanceOf(TeacherNotFoundException.class)
                 .hasMessageContaining("Teacher with id: " + 1L+ " could not be found");
@@ -148,13 +148,13 @@ class SubjectServiceTest {
         //given
         tec.saveTestTeacher();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setTeacherEntityId(1L);
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    this.subjectService.createNew(subjectEto);
+                    subjectService.createNew(subjectEto);
                     //then
                 }).isInstanceOf(ClassYearNotFoundException.class)
                 .hasMessageContaining("ClassYear with id: " + 1L+ " could not be found");
@@ -180,7 +180,7 @@ class SubjectServiceTest {
         //given
         tec.saveTestTeacher();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
@@ -196,7 +196,7 @@ class SubjectServiceTest {
         tec.saveTestTeacher();
         SubjectEto subjectEto = new SubjectEto();
         subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearId(1L);
+        subjectEto.setClassYearEntityId(1L);
 
         Assertions.assertThatThrownBy(() -> {
             //when
@@ -211,15 +211,15 @@ class SubjectServiceTest {
     public void updateSubjectTeacherShouldReturnSubjectWithNewTeacherID() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
         tec.saveTestTeacher();
 
-        Long oldID = surepo.findById(1L).get().getTeacherEntity().getId();
+        Long oldID = suRepo.findById(1L).get().getTeacherEntity().getId();
         //when
         SubjectEto updatedSubject = subjectService.updateSubjectTeacher(1L, 2L);
 
-        Long newID = surepo.findById(1L).get().getTeacherEntity().getId();
+        Long newID = suRepo.findById(1L).get().getTeacherEntity().getId();
         //then
         Assertions.assertThat(newID).isNotEqualTo(oldID);
         Assertions.assertThat(updatedSubject.getTeacherEntityId()).isEqualTo(newID);
@@ -229,12 +229,12 @@ class SubjectServiceTest {
     public void updateSubjectTeacherShouldThrowExceptionWhenProvideNotExistingTeacherID() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    this.subjectService.updateSubjectTeacher(1L, 2L);
+                    subjectService.updateSubjectTeacher(1L, 2L);
                     //then
                 }).isInstanceOf(TeacherNotFoundException.class)
                 .hasMessageContaining("Teacher with id: " + 2L+ " could not be found");
@@ -245,7 +245,7 @@ class SubjectServiceTest {
     public void deleteSubjectAndThenGetItShouldThrowException() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
@@ -261,11 +261,11 @@ class SubjectServiceTest {
     public void deleteSubjectShouldLeaveEmptyDatabaseTable() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         tec.saveTestSubject(cy,te);
         //when
         subjectService.delete(1L);
-        List<SubjectEntity> subjects = this.surepo.findAll();
+        List<SubjectEntity> subjects = suRepo.findAll();
         //then
         Assertions.assertThat(subjects).isEmpty();
     }
@@ -274,17 +274,17 @@ class SubjectServiceTest {
     public void deleteSubjectShouldDeleteAllAssignedGrades() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         StudentEntity ste = tec.saveTestStudent(cy);
         SubjectEntity sue = tec.saveTestSubject(cy,te);
         tec.saveTestGrade(te,ste,sue);
         tec.saveTestGrade(te,ste,sue);
 
-        Integer oldGradesCount = this.grepo.findAllBySubjectEntityId(1L).size();
+        Integer oldGradesCount = gRepo.findAllBySubjectEntityId(1L).size();
         //when
         subjectService.delete(1L);
 
-        Integer newGradesCount = this.grepo.findAllBySubjectEntityId(1L).size();
+        Integer newGradesCount = gRepo.findAllBySubjectEntityId(1L).size();
         //then
         Assertions.assertThat(oldGradesCount).isNotEqualTo(newGradesCount);
         Assertions.assertThat(newGradesCount).isEqualTo(0);

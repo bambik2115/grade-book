@@ -27,7 +27,7 @@ class GradeRepoCustomTest {
     private TestEntityCreator tec;
 
     @Inject
-    private GradeRepo grepo;
+    private GradeRepo gRepo;
 
     @AfterEach
     private void cleanDbBetweenTests() {
@@ -39,7 +39,7 @@ class GradeRepoCustomTest {
     public void findByCriteriaShouldReturnMatchingGrades() {
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-12"), BigDecimal.valueOf(3.00));
@@ -60,7 +60,7 @@ class GradeRepoCustomTest {
         criteria.setSubjectEntityId(1L);
 
         //When
-        List<Grade> result = this.grepo.findByCriteria(criteria);
+        List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
         //then
         Assertions.assertThat(result.size()).isEqualTo(2);
@@ -74,7 +74,7 @@ class GradeRepoCustomTest {
     public void findByCriteriaShouldReturnMatchingDateRangeResults() {
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(3.00));
@@ -88,7 +88,7 @@ class GradeRepoCustomTest {
         criteria.setCreatedDateTo(LocalDate.parse("2022-11-29"));
 
         //When
-        List<Grade> result = this.grepo.findByCriteria(criteria);
+        List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
         //then
         Assertions.assertThat(result.size()).isEqualTo(3);
@@ -100,7 +100,7 @@ class GradeRepoCustomTest {
     public void findByCriteriaShouldReturnMatchingWeightRangeResults() {
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(1.00));
@@ -114,7 +114,7 @@ class GradeRepoCustomTest {
         criteria.setWeightTo(BigDecimal.valueOf(4.00));
 
         //When
-        List<Grade> result = this.grepo.findByCriteria(criteria);
+        List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
         //then
         Assertions.assertThat(result.size()).isEqualTo(3);
@@ -126,7 +126,7 @@ class GradeRepoCustomTest {
     public void findByCriteriaShouldReturnMatchingValueRangeResults() {
         //Given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         StudentEntity ste = tec.saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(3.00));
@@ -140,7 +140,7 @@ class GradeRepoCustomTest {
         criteria.setValueTo(4);
 
         //When
-        List<Grade> result = this.grepo.findByCriteria(criteria);
+        List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
         //then
         Assertions.assertThat(result.size()).isEqualTo(3);
@@ -149,7 +149,7 @@ class GradeRepoCustomTest {
     }
 
     private void createGrade(TeacherEntity te, StudentEntity ste, SubjectEntity sue, GradeType gt, Integer val, LocalDate date, BigDecimal wg) {
-        Grade grade = new Grade();
+        GradeEntity grade = new GradeEntity();
         grade.setSubjectEntity(sue);
         grade.setStudentEntity(ste);
         grade.setTeacherEntity(te);
@@ -157,7 +157,7 @@ class GradeRepoCustomTest {
         grade.setValue(val);
         grade.setDateOfGrade(date);
         grade.setWeight(wg);
-        this.grepo.save(grade);
+        gRepo.save(grade);
     }
 
 

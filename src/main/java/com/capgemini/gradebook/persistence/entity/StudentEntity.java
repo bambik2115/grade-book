@@ -9,22 +9,23 @@ import java.util.List;
 public class StudentEntity extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private ClassYear classYear;
+    private ClassYearEntity classYearEntity;
 
     private Integer age;
 
     private String firstName;
+
     private String lastName;
 
-    @OneToMany(mappedBy = "studentEntity", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    private List<Grade> studentGradeList;
+    @OneToMany(mappedBy = "studentEntity", cascade = CascadeType.REMOVE)
+    private List<GradeEntity> gradeList;
 
-    public ClassYear getClassYear() {
-        return this.classYear;
+    public ClassYearEntity getClassYearEntity() {
+        return this.classYearEntity;
     }
 
-    public void setClassYear(ClassYear classYear) {
-        this.classYear = classYear;
+    public void setClassYearEntity(ClassYearEntity classYearEntity) {
+        this.classYearEntity = classYearEntity;
     }
 
     public Integer getAge() {
@@ -49,5 +50,13 @@ public class StudentEntity extends AbstractEntity {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public List<GradeEntity> getGradeList() {
+        return this.gradeList;
+    }
+
+    public void setGradeList(List<GradeEntity> gradeList) {
+        this.gradeList = gradeList;
     }
 }

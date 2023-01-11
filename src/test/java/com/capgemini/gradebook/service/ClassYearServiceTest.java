@@ -4,7 +4,7 @@ import com.capgemini.gradebook.DbCleanUpService;
 import com.capgemini.gradebook.TestEntityCreator;
 import com.capgemini.gradebook.domain.ClassYearEto;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
-import com.capgemini.gradebook.persistence.entity.ClassYear;
+import com.capgemini.gradebook.persistence.entity.ClassYearEntity;
 import com.capgemini.gradebook.persistence.entity.SubjectEntity;
 import com.capgemini.gradebook.persistence.entity.TeacherEntity;
 import com.capgemini.gradebook.persistence.repo.ClassYearRepo;
@@ -35,10 +35,10 @@ class ClassYearServiceTest {
     private TestEntityCreator tec;
 
     @Inject
-    private SubjectRepo surepo;
+    private SubjectRepo suRepo;
 
     @Inject
-    private ClassYearRepo cyrepo;
+    private ClassYearRepo cyRepo;
 
     @AfterEach
     private void cleanDbBetweenTests() {
@@ -192,7 +192,7 @@ class ClassYearServiceTest {
     @Test
     public void partialUpdateShouldReturnClassYearWithNewValues() {
         //Given
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         Map<String, Object> info = new HashMap<>();
         info.put("classLevel", 3);
         info.put("className", "C");
@@ -211,18 +211,18 @@ class ClassYearServiceTest {
     public void partialUpdateWithNewClassNameOrLevelShouldUpdateSubjectName() {
         //given
         TeacherEntity te = tec.saveTestTeacher();
-        ClassYear cy = tec.saveTestClassYear();
+        ClassYearEntity cy = tec.saveTestClassYear();
         SubjectEntity sue = tec.saveTestSubject(cy, te);
         Map<String, Object> info = new HashMap<>();
         info.put("className", "E");
         info.put("classLevel", 2);
 
-        String oldName = surepo.findById(1L).get().getName();
+        String oldName = suRepo.findById(1L).get().getName();
 
         //When
         ClassYearEto classYearEto = classYearService.partialUpdate(1L, info);
 
-        String newName = surepo.findById(1L).get().getName();
+        String newName = suRepo.findById(1L).get().getName();
 
         //Then
         Assertions.assertThat(newName).isNotEqualTo(oldName);
@@ -255,10 +255,10 @@ class ClassYearServiceTest {
 
         //When
         classYearService.delete(1L);
-        List<ClassYear> classyears = this.cyrepo.findAll();
+        List<ClassYearEntity> classYears = cyRepo.findAll();
 
         //Then
-        Assertions.assertThat(classyears).isEmpty();
+        Assertions.assertThat(classYears).isEmpty();
     }
 
 

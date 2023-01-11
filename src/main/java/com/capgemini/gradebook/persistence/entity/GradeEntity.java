@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "GRADE")
-public class Grade extends AbstractEntity {
+public class GradeEntity extends AbstractEntity {
 
 
     private Integer value;

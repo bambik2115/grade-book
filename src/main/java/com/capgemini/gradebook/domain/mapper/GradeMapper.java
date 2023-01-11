@@ -1,14 +1,14 @@
 package com.capgemini.gradebook.domain.mapper;
 
 import com.capgemini.gradebook.domain.GradeEto;
-import com.capgemini.gradebook.persistence.entity.Grade;
+import com.capgemini.gradebook.persistence.entity.GradeEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public final class GradeMapper {
 
-    public static final GradeEto mapToETO(Grade grade){
+    public static final GradeEto mapToETO(GradeEntity grade){
 
         GradeEto gradeTo = new GradeEto();
         gradeTo.setId(grade.getId());
@@ -28,9 +28,9 @@ public final class GradeMapper {
         return gradeTo;
     }
 
-    public static final Grade mapToEntity(GradeEto gradeTo){
+    public static final GradeEntity mapToEntity(GradeEto gradeTo){
 
-        Grade grade = new Grade();
+        GradeEntity grade = new GradeEntity();
         grade.setId(gradeTo.getId());
         grade.setVersion(gradeTo.getVersion());
         grade.setCreateDate(gradeTo.getCreateDate());
@@ -44,11 +44,11 @@ public final class GradeMapper {
         return grade;
     }
 
-    public static final List<GradeEto> mapToETOList(List<Grade> entities){
+    public static final List<GradeEto> mapToETOList(List<GradeEntity> entities){
         return entities.stream().map(e -> mapToETO(e)).collect(Collectors.toList());
     }
 
-    public static final List<Grade> mapToEntityList(List<GradeEto> tos){
+    public static final List<GradeEntity> mapToEntityList(List<GradeEto> tos){
         return tos.stream().map(t -> mapToEntity(t)).collect(Collectors.toList());
     }
 

@@ -10,7 +10,6 @@ import javax.validation.ConstraintViolationException;
 
 import com.capgemini.gradebook.DbCleanUpService;
 import com.capgemini.gradebook.TestEntityCreator;
-import com.capgemini.gradebook.domain.SubjectEto;
 import com.capgemini.gradebook.exceptions.TeacherNotFoundException;
 import com.capgemini.gradebook.exceptions.TeacherStillInUseException;
 import com.capgemini.gradebook.persistence.entity.*;
@@ -28,16 +27,19 @@ class TeacherServiceTest {
 
   @Inject
   private TestEntityCreator tec;
+
   @Inject
   private TeacherService teacherService;
-  @Inject
-  private TeacherRepo trepo;
 
   @Inject
-  private SubjectRepo surepo;
+  private TeacherRepo tRepo;
 
   @Inject
-  private GradeRepo grepo;
+  private SubjectRepo suRepo;
+
+  @Inject
+  private GradeRepo gRepo;
+
   @Inject
   private DbCleanUpService testDbService;
 
@@ -118,13 +120,13 @@ class TeacherServiceTest {
 
     //Given
     tec.saveTestTeacher();
-    TeacherEto teachereto = new TeacherEto();
-    teachereto.setId(1L);
-    teachereto.setFirstName("Kamil");
-    teachereto.setLastName("Komar");
+    TeacherEto teacherEto = new TeacherEto();
+    teacherEto.setId(1L);
+    teacherEto.setFirstName("Kamil");
+    teacherEto.setLastName("Komar");
 
     //When
-    TeacherEto result = teacherService.createNew(teachereto);
+    TeacherEto result = teacherService.createNew(teacherEto);
 
     //Then
     Assertions.assertThat(result.getId()).isNotEqualTo(1L);
@@ -133,9 +135,9 @@ class TeacherServiceTest {
   @Test
   public void createNewShouldReturnInstanceOfTeacherEto() {
 
-    TeacherEto teachereto = new TeacherEto();
+    TeacherEto teacherEto = new TeacherEto();
     //when
-    TeacherEto result = teacherService.createNew(teachereto);
+    TeacherEto result = teacherService.createNew(teacherEto);
     //then
     Assertions.assertThat(result).isInstanceOf(TeacherEto.class);
   }
@@ -143,11 +145,11 @@ class TeacherServiceTest {
   @Test
   public void createNewShouldReturnTeacherWithMatchingFields() {
 
-    TeacherEto teachereto = new TeacherEto();
-    teachereto.setFirstName("Kamil");
-    teachereto.setLastName("Komar");
+    TeacherEto teacherEto = new TeacherEto();
+    teacherEto.setFirstName("Kamil");
+    teacherEto.setLastName("Komar");
     //when
-    TeacherEto result = teacherService.createNew(teachereto);
+    TeacherEto result = teacherService.createNew(teacherEto);
     //then
     Assertions.assertThat(result.getFirstName()).isEqualTo("Kamil");
     Assertions.assertThat(result.getLastName()).isEqualTo("Komar");
@@ -156,13 +158,13 @@ class TeacherServiceTest {
   @Test
   public void createNewShouldThrowExceptionWhenNoFirstNameProvided() {
 
-    TeacherEto teachereto = new TeacherEto();
-    teachereto.setLastName("Komar");
+    TeacherEto teacherEto = new TeacherEto();
+    teacherEto.setLastName("Komar");
 
 
     Assertions.assertThatThrownBy(() -> {
       //when
-      teacherService.createNew(teachereto);
+      teacherService.createNew(teacherEto);
       //then
     }).isInstanceOf(ConstraintViolationException.class);
   }
@@ -170,13 +172,13 @@ class TeacherServiceTest {
   @Test
   public void createNewShouldThrowExceptionWhenNoLastNameProvided() {
 
-    TeacherEto teachereto = new TeacherEto();
-    teachereto.setFirstName("Kamil");
+    TeacherEto teacherEto = new TeacherEto();
+    teacherEto.setFirstName("Kamil");
 
 
     Assertions.assertThatThrownBy(() -> {
       //when
-      teacherService.createNew(teachereto);
+      teacherService.createNew(teacherEto);
       //then
     }).isInstanceOf(ConstraintViolationException.class);
   }
@@ -188,9 +190,9 @@ class TeacherServiceTest {
     Map<String, Object> info = new HashMap<>();
     info.put("firstName", "Kuba");
     //when
-    TeacherEto teachereto = teacherService.partialUpdate(1L, info);
+    TeacherEto teacherEto = teacherService.partialUpdate(1L, info);
     //then
-    Assertions.assertThat(teachereto).isInstanceOf(TeacherEto.class);
+    Assertions.assertThat(teacherEto).isInstanceOf(TeacherEto.class);
 
   }
 
@@ -200,17 +202,17 @@ class TeacherServiceTest {
     TeacherEto oldteacher = new TeacherEto();
     oldteacher.setFirstName("Kamil");
     oldteacher.setLastName("Korek");
-    this.teacherService.createNew(oldteacher);
+    teacherService.createNew(oldteacher);
 
-    String oldName = this.trepo.findById(1L).get().getFirstName();
+    String oldName = tRepo.findById(1L).get().getFirstName();
 
     Map<String, Object> info = new HashMap<>();
     info.put("firstName", "Kuba");
 
     //When
-    TeacherEto teachereto = teacherService.partialUpdate(1L, info);
+    TeacherEto teacherEto = teacherService.partialUpdate(1L, info);
 
-    String newName = this.trepo.findById(1L).get().getFirstName();
+    String newName = tRepo.findById(1L).get().getFirstName();
 
     //Then
     Assertions.assertThat(oldName).isNotEqualTo(newName);
@@ -224,13 +226,13 @@ class TeacherServiceTest {
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
     te2.setLastName("Łotr");
-    trepo.save(te2);
-    ClassYear cy = tec.saveTestClassYear();
+    tRepo.save(te2);
+    ClassYearEntity cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
     //when
     teacherService.delete(1L, Optional.of(2L));
 
-    List<SubjectEntity> result = this.surepo.findAllByTeacherEntityIdIsNull();
+    List<SubjectEntity> result = suRepo.findAllByTeacherEntityIdIsNull();
     //then
     Assertions.assertThat(result).isEmpty();
   }
@@ -242,8 +244,8 @@ class TeacherServiceTest {
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
     te2.setLastName("Łotr");
-    trepo.save(te2);
-    ClassYear cy = tec.saveTestClassYear();
+    tRepo.save(te2);
+    ClassYearEntity cy = tec.saveTestClassYear();
     SubjectEntity su = tec.saveTestSubject(cy, te);
     StudentEntity st = tec.saveTestStudent(cy);
     tec.saveTestGrade(te, st, su);
@@ -251,7 +253,7 @@ class TeacherServiceTest {
     //when
     teacherService.delete(1L, Optional.of(2L));
 
-    List<Grade> result = this.grepo.findAllByTeacherEntityIdIsNull();
+    List<GradeEntity> result = gRepo.findAllByTeacherEntityIdIsNull();
     //then
     Assertions.assertThat(result).isEmpty();
 
@@ -264,16 +266,16 @@ class TeacherServiceTest {
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
     te2.setLastName("Łotr");
-    trepo.save(te2);
-    ClassYear cy = tec.saveTestClassYear();
+    tRepo.save(te2);
+    ClassYearEntity cy = tec.saveTestClassYear();
     SubjectEntity se = tec.saveTestSubject(cy, te);
 
-    Long oldId = surepo.findById(1L).get().getTeacherEntity().getId();
+    Long oldId = suRepo.findById(1L).get().getTeacherEntity().getId();
 
     //when
     teacherService.delete(1L, Optional.of(2L));
 
-    Long newId = surepo.findById(1L).get().getTeacherEntity().getId();
+    Long newId = suRepo.findById(1L).get().getTeacherEntity().getId();
 
     //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
@@ -287,18 +289,18 @@ class TeacherServiceTest {
     TeacherEntity te2 = new TeacherEntity();
     te2.setFirstName("Piotr");
     te2.setLastName("Łotr");
-    trepo.save(te2);
-    ClassYear cy = tec.saveTestClassYear();
+    tRepo.save(te2);
+    ClassYearEntity cy = tec.saveTestClassYear();
     SubjectEntity sue = tec.saveTestSubject(cy, te);
     StudentEntity ste = tec.saveTestStudent(cy);
     tec.saveTestGrade(te, ste, sue);
 
-    Long oldId = grepo.findById(1L).get().getTeacherEntity().getId();
+    Long oldId = gRepo.findById(1L).get().getTeacherEntity().getId();
 
     //when
     teacherService.delete(1L, Optional.of(2L));
 
-    Long newId = grepo.findById(1L).get().getTeacherEntity().getId();
+    Long newId = gRepo.findById(1L).get().getTeacherEntity().getId();
     //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
     Assertions.assertThat(newId).isEqualTo(2L);
@@ -308,7 +310,7 @@ class TeacherServiceTest {
   public void deleteTeacherWithNotExistingNewIdShouldThrowException() {
     //Given
     TeacherEntity te = tec.saveTestTeacher();
-    ClassYear cy = tec.saveTestClassYear();
+    ClassYearEntity cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
@@ -341,12 +343,12 @@ class TeacherServiceTest {
   public void deleteTeacherInUseWithoutNewIdShouldThrowException() {
     //Given
     TeacherEntity te = tec.saveTestTeacher();
-    ClassYear cy = tec.saveTestClassYear();
+    ClassYearEntity cy = tec.saveTestClassYear();
     tec.saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
               //when
-      this.teacherService.delete(1L, Optional.empty());
+      teacherService.delete(1L, Optional.empty());
               //then
     }).isInstanceOf(TeacherStillInUseException.class)
             .hasMessageContaining("Teacher with ID: " + 1L + " is in use, please pass ID to update");
@@ -360,7 +362,7 @@ class TeacherServiceTest {
     //when
     teacherService.delete(1L, Optional.empty());
 
-    List<TeacherEntity> teachers = this.trepo.findAll();
+    List<TeacherEntity> teachers = tRepo.findAll();
     //then
     Assertions.assertThat(teachers).isEmpty();
   }

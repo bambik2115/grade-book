@@ -11,16 +11,16 @@ public final class SubjectMapper {
 
     public static final SubjectEto mapToETO(SubjectEntity entity){
 
-        SubjectEto subject = new SubjectEto();
-        subject.setId(entity.getId());
-        subject.setVersion(entity.getVersion());
-        subject.setCreateDate(entity.getCreateDate());
-        subject.setUpdateDate(entity.getUpdateDate());
-        subject.setSubjectType(entity.getSubjectType());
-        subject.setTeacherEntityId(entity.getTeacherEntity().getId());
-        subject.setClassYearId(entity.getClassYear().getId());
+        SubjectEto subjectTo = new SubjectEto();
+        subjectTo.setId(entity.getId());
+        subjectTo.setVersion(entity.getVersion());
+        subjectTo.setCreateDate(entity.getCreateDate());
+        subjectTo.setUpdateDate(entity.getUpdateDate());
+        subjectTo.setSubjectType(entity.getSubjectType());
+        subjectTo.setTeacherEntityId(entity.getTeacherEntity().getId());
+        subjectTo.setClassYearEntityId(entity.getClassYear().getId());
 
-        return subject;
+        return subjectTo;
     }
 
     public static final SubjectEntity mapToEntity(SubjectEto subjectTo){

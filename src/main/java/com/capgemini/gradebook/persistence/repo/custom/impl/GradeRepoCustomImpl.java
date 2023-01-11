@@ -1,7 +1,7 @@
 package com.capgemini.gradebook.persistence.repo.custom.impl;
 
 import com.capgemini.gradebook.domain.GradeSearchCriteria;
-import com.capgemini.gradebook.persistence.entity.Grade;
+import com.capgemini.gradebook.persistence.entity.GradeEntity;
 import com.capgemini.gradebook.persistence.repo.custom.GradeRepoCustom;
 
 import javax.persistence.EntityManager;
@@ -22,11 +22,11 @@ public class GradeRepoCustomImpl implements GradeRepoCustom {
 
 
     @Override
-    public List<Grade> findByCriteria(GradeSearchCriteria criteria) {
+    public List<GradeEntity> findByCriteria(GradeSearchCriteria criteria) {
 
         CriteriaBuilder query = em.getCriteriaBuilder();
         CriteriaQuery criteriaquery = query.createQuery();
-        Root<Grade> grade = criteriaquery.from(Grade.class);
+        Root<GradeEntity> grade = criteriaquery.from(GradeEntity.class);
         List<Predicate> predicates = new ArrayList<Predicate>();
 
         if(criteria.getGradeType() != null) {
@@ -60,7 +60,7 @@ public class GradeRepoCustomImpl implements GradeRepoCustom {
         criteriaquery.select(grade)
                 .where(predicates.toArray(new Predicate[0]));
 
-        List<Grade> result = em.createQuery(criteriaquery).getResultList();
+        List<GradeEntity> result = em.createQuery(criteriaquery).getResultList();
 
         return result;
     }
