@@ -1,13 +1,0 @@
-
-`
-java:S1128">Remove this unused import 'javax.persistence.EntityListeners'.(Ì‡‰ÿÿÿÿÿ8Ò»—¢º0
-Z
-java:S1128"8Remove this unused import 'javax.persistence.PreUpdate'.(„µÉıÿÿÿÿ8¼°­Ÿº0
-n
-java:S1128"LRemove this unused import 'org.springframework.data.annotation.CreatedDate'.(Éå¥°ÿÿÿÿÿ8º–¢º0
-[
-java:S1128"9Remove this unused import 'javax.persistence.PrePersist'.(…ò±Şÿÿÿÿÿ8¼°­Ÿº0
-|
-java:S1128"_Remove this unused import 'org.springframework.data.jpa.domain.support.AuditingEntityListener'.(µıÄ¸8Ò»—¢º0
-n
-java:S1128"QRemove this unused import 'org.springframework.data.annotation.LastModifiedDate'.(Æğ¼‰8¶î–¢º0
