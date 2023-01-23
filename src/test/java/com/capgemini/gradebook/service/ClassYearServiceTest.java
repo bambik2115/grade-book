@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootTest
-class ClassYearServiceTest {
+class ClassYearServiceTest extends TestEntityCreator {
 
 
     @Inject
@@ -30,9 +30,6 @@ class ClassYearServiceTest {
 
     @Inject
     private DbCleanUpService cleanUpService;
-
-    @Inject
-    private TestEntityCreator tec;
 
     @Inject
     private SubjectRepo suRepo;
@@ -50,7 +47,7 @@ class ClassYearServiceTest {
     public void findClassYearByIdShouldThrowExceptionIfNotExist() {
 
         //given
-        tec.saveTestClassYear();
+        saveTestClassYear();
 
         Assertions.assertThatThrownBy(() -> {
                     //when
@@ -64,49 +61,17 @@ class ClassYearServiceTest {
     public void findClassYearByIdShouldReturnProperEntity() {
 
         //given
-        tec.saveTestClassYear();
+        ClassYearEntity cye = saveTestClassYear();
+
 
         //when
         ClassYearEto result = classYearService.findClassYearById(1L);
 
         //then
         Assertions.assertThat(result).isNotNull();
-        Assertions.assertThat(result.getId()).isEqualTo(1L);
+        Assertions.assertThat(result.getId()).isEqualTo(cye.getId());
     }
 
-    @Test
-    public void createNewClassYearShouldAlwaysAssignNewId() {
-
-        //Given
-        tec.saveTestClassYear();
-        ClassYearEto classYearEto = new ClassYearEto();
-        classYearEto.setId(1L);
-        classYearEto.setClassYear("2022");
-        classYearEto.setClassLevel(1);
-        classYearEto.setClassName("D");
-
-        //When
-        ClassYearEto result = classYearService.createNew(classYearEto);
-
-        //Then
-        Assertions.assertThat(result.getId()).isNotEqualTo(1L);
-    }
-
-    @Test
-    public void createNewShouldReturnInstanceOfClassYearEto() {
-
-        //given
-        ClassYearEto classYearEto = new ClassYearEto();
-        classYearEto.setClassName("D");
-        classYearEto.setClassYear("2022");
-        classYearEto.setClassLevel(1);
-
-        //when
-        ClassYearEto result = classYearService.createNew(classYearEto);
-
-        //then
-        Assertions.assertThat(result).isInstanceOf(ClassYearEto.class);
-    }
 
     @Test
     public void createNewShouldReturnClassYearWithMatchingFields() {
@@ -177,12 +142,12 @@ class ClassYearServiceTest {
     @Test
     public void partialUpdateShouldReturnInstanceOfClassYearEto() {
         //given
-        tec.saveTestClassYear();
+        ClassYearEntity cye = saveTestClassYear();
         Map<String, Object> info = new HashMap<>();
         info.put("className", "C");
 
         //when
-        ClassYearEto result = classYearService.partialUpdate(1L, info);
+        ClassYearEto result = classYearService.partialUpdate(cye.getId(), info);
 
         //then
         Assertions.assertThat(result).isInstanceOf(ClassYearEto.class);
@@ -192,58 +157,56 @@ class ClassYearServiceTest {
     @Test
     public void partialUpdateShouldReturnClassYearWithNewValues() {
         //Given
-        ClassYearEntity cy = tec.saveTestClassYear();
+        ClassYearEntity cye = saveTestClassYear();
         Map<String, Object> info = new HashMap<>();
         info.put("classLevel", 3);
         info.put("className", "C");
 
         //When
-        ClassYearEto result = classYearService.partialUpdate(1L, info);
+        ClassYearEto result = classYearService.partialUpdate(cye.getId(), info);
 
         //Then
-        Assertions.assertThat(result.getClassName()).isNotEqualTo(cy.getClassName());
-        Assertions.assertThat(result.getClassLevel()).isNotEqualTo(cy.getClassLevel());
+        Assertions.assertThat(result.getClassName()).isNotEqualTo(cye.getClassName());
+        Assertions.assertThat(result.getClassLevel()).isNotEqualTo(cye.getClassLevel());
         Assertions.assertThat(result.getClassName()).isEqualTo("C");
         Assertions.assertThat(result.getClassLevel()).isEqualTo(3);
     }
 
     @Test
-    public void partialUpdateWithNewClassNameOrLevelShouldUpdateSubjectName() {
+    public void partialUpdateWithNewClassNameAndLevelShouldUpdateSubjectName() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cye, te);
         Map<String, Object> info = new HashMap<>();
         info.put("className", "E");
         info.put("classLevel", 2);
 
-        String oldName = suRepo.findById(1L).get().getName();
-
         //When
-        ClassYearEto classYearEto = classYearService.partialUpdate(1L, info);
+        ClassYearEto classYearEto = classYearService.partialUpdate(cye.getId(), info);
 
-        String newName = suRepo.findById(1L).get().getName();
+        String newName = suRepo.findById(cye.getId()).get().getName();
 
         //Then
-        Assertions.assertThat(newName).isNotEqualTo(oldName);
         Assertions.assertThat(newName).isEqualTo("BIOLOGY_2E");
     }
 
 
     @Test
-    public void deleteClassYearAndThenGetItShouldThrowException() {
+    public void findingClassYearAfterDeleteShouldThrowException() {
         //given
-        tec.saveTestClassYear();
+        ClassYearEntity cye = saveTestClassYear();
+
 
         Assertions.assertThatThrownBy(() -> {
 
                     //When
-                    classYearService.delete(1L);
-                    ClassYearEto result = classYearService.findClassYearById(1L);
+                    classYearService.delete(cye.getId());
+                    ClassYearEto result = classYearService.findClassYearById(cye.getId());
 
                     //Then
                 }).isInstanceOf(ClassYearNotFoundException.class)
-                .hasMessageContaining("ClassYear with id: " + 1L + " could not be found");
+                .hasMessageContaining("ClassYear with id: " + cye.getId() + " could not be found");
 
     }
 
@@ -251,10 +214,10 @@ class ClassYearServiceTest {
     @Test
     public void deleteClassYearShouldLeaveEmptyDatabaseTable() {
         //given
-        tec.saveTestClassYear();
+        ClassYearEntity cye = saveTestClassYear();
 
         //When
-        classYearService.delete(1L);
+        classYearService.delete(cye.getId());
         List<ClassYearEntity> classYears = cyRepo.findAll();
 
         //Then

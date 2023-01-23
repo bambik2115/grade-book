@@ -15,16 +15,14 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @SpringBootTest
-class GradeRepoCustomTest {
+class GradeRepoCustomTest extends TestEntityCreator {
 
     @Inject
     private DbCleanUpService cleanUpService;
-
-    @Inject
-    private TestEntityCreator tec;
 
     @Inject
     private GradeRepo gRepo;
@@ -38,10 +36,10 @@ class GradeRepoCustomTest {
     @Test
     public void findByCriteriaShouldReturnMatchingGrades() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-12"), BigDecimal.valueOf(3.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-14"), BigDecimal.valueOf(4.00));
@@ -73,10 +71,10 @@ class GradeRepoCustomTest {
     @Test
     public void findByCriteriaShouldReturnMatchingDateRangeResults() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(3.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-12"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(4.00));
@@ -99,10 +97,10 @@ class GradeRepoCustomTest {
     @Test
     public void findByCriteriaShouldReturnMatchingWeightRangeResults() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(1.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-12"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(4.00));
@@ -116,19 +114,20 @@ class GradeRepoCustomTest {
         //When
         List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
+        List<Long> listOfIds = result.stream().map(GradeEntity::getId).collect(Collectors.toList());
+
         //then
         Assertions.assertThat(result.size()).isEqualTo(3);
-        Assertions.assertThat(result.get(1).getId()).isEqualTo(3L);
-        Assertions.assertThat(result.get(2).getWeight()).isEqualTo(BigDecimal.valueOf(3.00));
+        Assertions.assertThat(listOfIds).contains(3L, 2L, 5L);
     }
 
     @Test
     public void findByCriteriaShouldReturnMatchingValueRangeResults() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.E, 2, LocalDate.parse("2022-11-11"), BigDecimal.valueOf(3.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-12"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(4.00));
@@ -142,10 +141,11 @@ class GradeRepoCustomTest {
         //When
         List<GradeEntity> result = gRepo.findByCriteria(criteria);
 
+        List<Long> listOfIds = result.stream().map(GradeEntity::getId).collect(Collectors.toList());
+
         //then
         Assertions.assertThat(result.size()).isEqualTo(3);
-        Assertions.assertThat(result.get(1).getId()).isEqualTo(2L);
-        Assertions.assertThat(result.get(2).getValue()).isEqualTo(3);
+        Assertions.assertThat(listOfIds).contains(3L, 2L, 5L);
     }
 
     private void createGrade(TeacherEntity te, StudentEntity ste, SubjectEntity sue, GradeType gt, Integer val, LocalDate date, BigDecimal wg) {

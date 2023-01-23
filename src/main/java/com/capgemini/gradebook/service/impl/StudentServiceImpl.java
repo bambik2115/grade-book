@@ -107,7 +107,7 @@ public class StudentServiceImpl implements StudentService {
         updateInfo.forEach((key, value) -> {
             Field field = ReflectionUtils.findField(StudentEto.class, key);
             field.setAccessible(true);
-            if(key.equals("classYearId"))
+            if(key.equals("classYearEntityId"))
                 ReflectionUtils.setField(field, studentEto, Long.valueOf((Integer) value));
             else
                 ReflectionUtils.setField(field, studentEto, value);

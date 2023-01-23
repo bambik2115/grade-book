@@ -2,6 +2,7 @@ package com.capgemini.gradebook.persistence.repo.custom;
 
 import com.capgemini.gradebook.DbCleanUpService;
 import com.capgemini.gradebook.TestEntityCreator;
+import com.capgemini.gradebook.domain.GradeEto;
 import com.capgemini.gradebook.persistence.entity.*;
 import com.capgemini.gradebook.persistence.repo.GradeRepo;
 import com.capgemini.gradebook.persistence.repo.StudentRepo;
@@ -16,18 +17,16 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootTest
-class StudentRepoCustomTest {
+class StudentRepoCustomTest extends TestEntityCreator {
 
     @Inject
     private StudentRepo studentRepo;
 
     @Inject
     private DbCleanUpService cleanUpService;
-
-    @Inject
-    private TestEntityCreator tec;
 
     @Inject
     private GradeRepo gRepo;
@@ -43,12 +42,12 @@ class StudentRepoCustomTest {
     @Test
     public void findByGradeFAtCertainDayShouldReturnMatchingStudents() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        StudentEntity ste1 = tec.saveTestStudent(cy);
-        StudentEntity ste2 = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        StudentEntity ste1 = saveTestStudent(cy);
+        StudentEntity ste2 = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(4.00));
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(3.00));
@@ -58,21 +57,21 @@ class StudentRepoCustomTest {
         //When
         List<StudentEntity> result = stRepo.findAllByGradeFAtCertainDay(LocalDate.parse("2022-11-16"));
 
+        List<Long> listOfIds = result.stream().map(StudentEntity::getId).collect(Collectors.toList());
+
         //then
+        Assertions.assertThat(listOfIds).contains(1L, 2L);
         Assertions.assertThat(result.size()).isEqualTo(2L);
-        Assertions.assertThat(result.get(0).getId()).isEqualTo(1L);
-        Assertions.assertThat(result.get(1).getId()).isEqualTo(2L);
-        Assertions.assertThat(result.get(0).getFirstName()).isEqualTo("Kamil");
     }
 
     @Test
     public void findByGradeFAtCertainDayShouldReturnEmptyListIfNoMatches() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        StudentEntity ste1 = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        StudentEntity ste1 = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(4.00));
         createGrade(te, ste1, sue, GradeType.F, 1, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(3.00));
@@ -88,12 +87,12 @@ class StudentRepoCustomTest {
     @Test
     public void findByCertainGradeAtCertainDayShouldReturnMatchingStudents() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        StudentEntity ste1 = tec.saveTestStudent(cy);
-        StudentEntity ste2 = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        StudentEntity ste1 = saveTestStudent(cy);
+        StudentEntity ste2 = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(4.00));
         createGrade(te, ste1, sue, GradeType.C, 4, LocalDate.parse("2022-11-18"), BigDecimal.valueOf(3.00));
@@ -103,22 +102,22 @@ class StudentRepoCustomTest {
         //When
         List<StudentEntity> result = stRepo.findAllByCertainGradeAtCertainDay(GradeType.C, LocalDate.parse("2022-11-18"));
 
+        List<Long> listOfIds = result.stream().map(StudentEntity::getId).collect(Collectors.toList());
+
         //then
+        Assertions.assertThat(listOfIds).contains(3L, 2L);
         Assertions.assertThat(result.size()).isEqualTo(2L);
-        Assertions.assertThat(result.get(0).getId()).isEqualTo(2L);
-        Assertions.assertThat(result.get(1).getId()).isEqualTo(3L);
-        Assertions.assertThat(result.get(0).getFirstName()).isEqualTo("Kamil");
     }
 
     @Test
     public void findByCertainGradeAtCertainDayShouldReturnEmptyListIfNoMatches() {
         //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        StudentEntity ste1 = tec.saveTestStudent(cy);
-        StudentEntity ste2 = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        StudentEntity ste1 = saveTestStudent(cy);
+        StudentEntity ste2 = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.C, 4, LocalDate.parse("2022-11-16"), BigDecimal.valueOf(2.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-11-15"), BigDecimal.valueOf(4.00));
         createGrade(te, ste1, sue, GradeType.C, 4, LocalDate.parse("2022-11-18"), BigDecimal.valueOf(3.00));

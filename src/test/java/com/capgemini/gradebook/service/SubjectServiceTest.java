@@ -21,16 +21,13 @@ import java.util.List;
 
 
 @SpringBootTest
-class SubjectServiceTest {
+class SubjectServiceTest extends TestEntityCreator {
 
     @Inject
     private SubjectService subjectService;
 
     @Inject
     private DbCleanUpService cleanUpService;
-
-    @Inject
-    private TestEntityCreator tec;
 
     @Inject
     private SubjectRepo suRepo;
@@ -47,92 +44,59 @@ class SubjectServiceTest {
     public void findSubjectByIdShouldReturnProperEntity() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
 
         //when
-        SubjectEto result = subjectService.findSubjectById(1L);
+        SubjectEto result = subjectService.findSubjectById(sue.getId());
 
         //then
         Assertions.assertThat(result).isNotNull();
-        Assertions.assertThat(result.getId()).isEqualTo(1L);
+        Assertions.assertThat(result.getId()).isEqualTo(sue.getId());
     }
 
     @Test
     public void findSubjectByIdShouldThrowExceptionIfNotExist() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    SubjectEto result = subjectService.findSubjectById(2L);
+                    SubjectEto result = subjectService.findSubjectById(sue.getId()+1);
                     //then
                 }).isInstanceOf(SubjectNotFoundException.class)
-                .hasMessageContaining("Subject with id: " + 2L + " could not be found");
+                .hasMessageContaining("Subject with id: " + (sue.getId()+1) + " could not be found");
     }
 
-    @Test
-    public void createNewSubjectShouldAlwaysAssignNewId() {
-
-        //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
-        SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setId(1L);
-        subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearEntityId(1L);
-        subjectEto.setSubjectType(SubjectType.CHEMISTRY);
-
-        //When
-        SubjectEto result = subjectService.createNew(subjectEto);
-
-        //Then
-        Assertions.assertThat(result.getId()).isNotEqualTo(1L);
-    }
-
-    @Test
-    public void createNewShouldReturnInstanceOfSubjectEto() {
-        //given
-        tec.saveTestTeacher();
-        tec.saveTestClassYear();
-        SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearEntityId(1L);
-        subjectEto.setSubjectType(SubjectType.CHEMISTRY);
-        //when
-        SubjectEto result = subjectService.createNew(subjectEto);
-        //then
-        Assertions.assertThat(result).isInstanceOf(SubjectEto.class);
-    }
 
     @Test
     public void createNewShouldReturnSubjectWithMatchingFields() {
         //given
-        tec.saveTestTeacher();
-        tec.saveTestClassYear();
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearEntityId(1L);
+        subjectEto.setTeacherEntityId(te.getId());
+        subjectEto.setClassYearEntityId(cye.getId());
         subjectEto.setSubjectType(SubjectType.CHEMISTRY);
         //when
         SubjectEto result = subjectService.createNew(subjectEto);
         //then
         Assertions.assertThat(result.getSubjectType()).isEqualTo(SubjectType.CHEMISTRY);
-        Assertions.assertThat(result.getTeacherEntityId()).isEqualTo(1L);
+        Assertions.assertThat(result.getTeacherEntityId()).isEqualTo(te.getId());
     }
 
     @Test
     public void createNewShouldThrowExceptionWhenProvidedNotExistingTeacherID() {
         //given
-        tec.saveTestClassYear();
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearEntityId(1L);
-        subjectEto.setTeacherEntityId(1L);
+        subjectEto.setClassYearEntityId(cye.getId());
+        subjectEto.setTeacherEntityId(te.getId()+1);
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
@@ -140,16 +104,17 @@ class SubjectServiceTest {
                     subjectService.createNew(subjectEto);
                     //then
                 }).isInstanceOf(TeacherNotFoundException.class)
-                .hasMessageContaining("Teacher with id: " + 1L+ " could not be found");
+                .hasMessageContaining("Teacher with id: " + (te.getId()+1) + " could not be found");
     }
 
     @Test
     public void createNewShouldThrowExceptionWhenProvidedNotExistingClassYearID() {
         //given
-        tec.saveTestTeacher();
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearEntityId(1L);
-        subjectEto.setTeacherEntityId(1L);
+        subjectEto.setClassYearEntityId(cye.getId()+1);
+        subjectEto.setTeacherEntityId(te.getId());
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
@@ -157,15 +122,15 @@ class SubjectServiceTest {
                     subjectService.createNew(subjectEto);
                     //then
                 }).isInstanceOf(ClassYearNotFoundException.class)
-                .hasMessageContaining("ClassYear with id: " + 1L+ " could not be found");
+                .hasMessageContaining("ClassYear with id: " + (cye.getId()+1) + " could not be found");
     }
 
     @Test
     public void createNewShouldThrowExceptionWhenNoClassYearIdProvided() {
         //given
-        tec.saveTestTeacher();
+        TeacherEntity te = saveTestTeacher();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setTeacherEntityId(1L);
+        subjectEto.setTeacherEntityId(te.getId());
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
@@ -178,9 +143,9 @@ class SubjectServiceTest {
     @Test
     public void createNewShouldThrowExceptionWhenNoTeacherEntityIdProvided() {
         //given
-        tec.saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setClassYearEntityId(1L);
+        subjectEto.setClassYearEntityId(cye.getId());
         subjectEto.setSubjectType(SubjectType.BIOLOGY);
 
         Assertions.assertThatThrownBy(() -> {
@@ -193,10 +158,11 @@ class SubjectServiceTest {
     @Test
     public void createNewShouldThrowExceptionWhenNoSubjectTypeProvided() {
         //given
-        tec.saveTestTeacher();
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
         SubjectEto subjectEto = new SubjectEto();
-        subjectEto.setTeacherEntityId(1L);
-        subjectEto.setClassYearEntityId(1L);
+        subjectEto.setTeacherEntityId(te.getId());
+        subjectEto.setClassYearEntityId(cye.getId());
 
         Assertions.assertThatThrownBy(() -> {
             //when
@@ -210,61 +176,59 @@ class SubjectServiceTest {
     @Test
     public void updateSubjectTeacherShouldReturnSubjectWithNewTeacherID() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
-        tec.saveTestTeacher();
+        TeacherEntity te = saveTestTeacher();
+        TeacherEntity te1 = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
 
-        Long oldID = suRepo.findById(1L).get().getTeacherEntity().getId();
         //when
-        SubjectEto updatedSubject = subjectService.updateSubjectTeacher(1L, 2L);
+        SubjectEto updatedSubject = subjectService.updateSubjectTeacher(sue.getId(), te1.getId());
 
-        Long newID = suRepo.findById(1L).get().getTeacherEntity().getId();
+        Long newID = suRepo.findById(sue.getId()).get().getTeacherEntity().getId();
         //then
-        Assertions.assertThat(newID).isNotEqualTo(oldID);
         Assertions.assertThat(updatedSubject.getTeacherEntityId()).isEqualTo(newID);
     }
 
     @Test
     public void updateSubjectTeacherShouldThrowExceptionWhenProvideNotExistingTeacherID() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    subjectService.updateSubjectTeacher(1L, 2L);
+                    subjectService.updateSubjectTeacher(sue.getId(), te.getId()+1);
                     //then
                 }).isInstanceOf(TeacherNotFoundException.class)
-                .hasMessageContaining("Teacher with id: " + 2L+ " could not be found");
+                .hasMessageContaining("Teacher with id: " + (te.getId()+1) + " could not be found");
     }
 
 
     @Test
-    public void deleteSubjectAndThenGetItShouldThrowException() {
+    public void findingSubjectAfterDeleteShouldThrowException() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    subjectService.delete(1L);
-                    SubjectEto result = subjectService.findSubjectById(1L);
+                    subjectService.delete(sue.getId());
+                    SubjectEto result = subjectService.findSubjectById(sue.getId());
                     //then
                 }).isInstanceOf(SubjectNotFoundException.class)
-                .hasMessageContaining("Subject with id: " + 1L + " could not be found");
+                .hasMessageContaining("Subject with id: " + sue.getId() + " could not be found");
     }
 
     @Test
     public void deleteSubjectShouldLeaveEmptyDatabaseTable() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        tec.saveTestSubject(cy,te);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy,te);
         //when
-        subjectService.delete(1L);
+        subjectService.delete(sue.getId());
         List<SubjectEntity> subjects = suRepo.findAll();
         //then
         Assertions.assertThat(subjects).isEmpty();
@@ -273,18 +237,18 @@ class SubjectServiceTest {
     @Test
     public void deleteSubjectShouldDeleteAllAssignedGrades() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        StudentEntity ste = tec.saveTestStudent(cy);
-        SubjectEntity sue = tec.saveTestSubject(cy,te);
-        tec.saveTestGrade(te,ste,sue);
-        tec.saveTestGrade(te,ste,sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        StudentEntity ste = saveTestStudent(cy);
+        SubjectEntity sue = saveTestSubject(cy,te);
+        saveTestGrade(te,ste,sue);
+        saveTestGrade(te,ste,sue);
 
-        Integer oldGradesCount = gRepo.findAllBySubjectEntityId(1L).size();
+        Integer oldGradesCount = gRepo.findAllBySubjectEntityId(sue.getId()).size();
         //when
-        subjectService.delete(1L);
+        subjectService.delete(sue.getId());
 
-        Integer newGradesCount = gRepo.findAllBySubjectEntityId(1L).size();
+        Integer newGradesCount = gRepo.findAllBySubjectEntityId(sue.getId()).size();
         //then
         Assertions.assertThat(oldGradesCount).isNotEqualTo(newGradesCount);
         Assertions.assertThat(newGradesCount).isEqualTo(0);

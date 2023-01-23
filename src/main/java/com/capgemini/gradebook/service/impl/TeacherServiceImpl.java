@@ -1,5 +1,6 @@
 package com.capgemini.gradebook.service.impl;
 
+import com.capgemini.gradebook.domain.SubjectEto;
 import com.capgemini.gradebook.domain.TeacherEto;
 import com.capgemini.gradebook.domain.mapper.TeacherMapper;
 import com.capgemini.gradebook.exceptions.ClassYearNotFoundException;
@@ -17,10 +18,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,12 +35,15 @@ public class TeacherServiceImpl implements TeacherService {
   private final SubjectRepo subjectRepository;
   private final GradeRepo gradeRepository;
 
+  private final Validator validator;
+
   @Autowired
-  public TeacherServiceImpl(final TeacherRepo teacherRepository, final SubjectRepo subjectRepository, final GradeRepo gradeRepository) {
+  public TeacherServiceImpl(final TeacherRepo teacherRepository, final SubjectRepo subjectRepository, final GradeRepo gradeRepository, final Validator validator) {
 
     this.teacherRepository = teacherRepository;
     this.subjectRepository = subjectRepository;
     this.gradeRepository = gradeRepository;
+    this.validator = validator;
   }
 
   @Override
@@ -70,6 +78,15 @@ public class TeacherServiceImpl implements TeacherService {
   public TeacherEto createNew(TeacherEto newTeacher) {
     if (newTeacher.getId() != null) {
       newTeacher.setId(null);
+    }
+    Set<ConstraintViolation<TeacherEto>> violations = this.validator.validate(newTeacher);
+    if (!violations.isEmpty()) {
+      StringBuilder sb = new StringBuilder();
+      for (ConstraintViolation<TeacherEto> constraintViolation : violations) {
+        sb.append(constraintViolation.getMessage());
+        sb.append("\n");
+      }
+      throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
     }
 
       TeacherEntity teacherEntity = TeacherMapper.mapToEntity(newTeacher);

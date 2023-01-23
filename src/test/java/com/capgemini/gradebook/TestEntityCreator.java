@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-@Component
-public class TestEntityCreator {
+public abstract class TestEntityCreator {
 
     @Inject
     private TeacherRepo tRepo;
@@ -65,12 +64,12 @@ public class TestEntityCreator {
         return this.stRepo.save(stentity);
     }
 
-    public GradeEntity saveTestGrade(TeacherEntity tentity, StudentEntity stentity, SubjectEntity suentity) {
+    public GradeEntity saveTestGrade(TeacherEntity teacher, StudentEntity student, SubjectEntity subject) {
 
         GradeEntity grade = new GradeEntity();
-        grade.setTeacherEntity(tentity);
-        grade.setStudentEntity(stentity);
-        grade.setSubjectEntity(suentity);
+        grade.setTeacherEntity(teacher);
+        grade.setStudentEntity(student);
+        grade.setSubjectEntity(subject);
         grade.setValue(1);
         grade.setGradeType(GradeType.F);
         return this.gRepo.save(grade);

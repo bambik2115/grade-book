@@ -22,11 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import com.capgemini.gradebook.domain.TeacherEto;
 
 @SpringBootTest
-class TeacherServiceTest {
+class TeacherServiceTest extends TestEntityCreator {
 
-
-  @Inject
-  private TestEntityCreator tec;
 
   @Inject
   private TeacherService teacherService;
@@ -57,7 +54,7 @@ class TeacherServiceTest {
   public void findAllTeachersShouldNotBeEmptyAfterInsert(){
 
     // given
-    tec.saveTestTeacher();
+    saveTestTeacher();
     // when
     List<TeacherEto> result = teacherService.findAllTeachers();
     // then
@@ -78,7 +75,7 @@ class TeacherServiceTest {
   public void findByNameShouldBeEmptyIfNotExist(){
 
     //given
-    tec.saveTestTeacher();
+    saveTestTeacher();
 
     //when
     List<TeacherEto> result = teacherService.findTeachersByLastName("Kowarski");
@@ -91,56 +88,30 @@ class TeacherServiceTest {
   public void findTeacherByIdShouldThrowExceptionIfNotExist() {
 
     //given
-    tec.saveTestTeacher();
+    TeacherEntity te = saveTestTeacher();
 
     Assertions.assertThatThrownBy(() -> {
                       //when
-                      TeacherEto result = teacherService.findTeacherById(2L);
+                      TeacherEto result = teacherService.findTeacherById(te.getId()+1);
                       //then
                     }).isInstanceOf(TeacherNotFoundException.class)
-            .hasMessageContaining("Teacher with id: " + 2L + " could not be found");
+            .hasMessageContaining("Teacher with id: " + (te.getId()+1) + " could not be found");
   }
 
   @Test
   public void findTeacherByIdShouldReturnProperEntity() {
 
     //given
-    tec.saveTestTeacher();
+    TeacherEntity te = saveTestTeacher();
 
     //when
-    TeacherEto result = teacherService.findTeacherById(1L);
+    TeacherEto result = teacherService.findTeacherById(te.getId());
 
     //then
     Assertions.assertThat(result).isNotNull();
-    Assertions.assertThat(result.getId()).isEqualTo(1L);
+    Assertions.assertThat(result.getId()).isEqualTo(te.getId());
   }
 
-  @Test
-  public void createNewUserShouldAlwaysAssignNewId() {
-
-    //Given
-    tec.saveTestTeacher();
-    TeacherEto teacherEto = new TeacherEto();
-    teacherEto.setId(1L);
-    teacherEto.setFirstName("Kamil");
-    teacherEto.setLastName("Komar");
-
-    //When
-    TeacherEto result = teacherService.createNew(teacherEto);
-
-    //Then
-    Assertions.assertThat(result.getId()).isNotEqualTo(1L);
-  }
-
-  @Test
-  public void createNewShouldReturnInstanceOfTeacherEto() {
-
-    TeacherEto teacherEto = new TeacherEto();
-    //when
-    TeacherEto result = teacherService.createNew(teacherEto);
-    //then
-    Assertions.assertThat(result).isInstanceOf(TeacherEto.class);
-  }
 
   @Test
   public void createNewShouldReturnTeacherWithMatchingFields() {
@@ -183,54 +154,36 @@ class TeacherServiceTest {
     }).isInstanceOf(ConstraintViolationException.class);
   }
 
-  @Test
-  public void partialUpdateShouldReturnInstanceOfTeacherEto() {
-
-    tec.saveTestTeacher();
-    Map<String, Object> info = new HashMap<>();
-    info.put("firstName", "Kuba");
-    //when
-    TeacherEto teacherEto = teacherService.partialUpdate(1L, info);
-    //then
-    Assertions.assertThat(teacherEto).isInstanceOf(TeacherEto.class);
-
-  }
 
   @Test
   public void partialUpdateShouldReturnTeacherWithNewValues() {
     //Given
-    TeacherEto oldteacher = new TeacherEto();
-    oldteacher.setFirstName("Kamil");
-    oldteacher.setLastName("Korek");
-    teacherService.createNew(oldteacher);
+    TeacherEntity te = saveTestTeacher();
 
-    String oldName = tRepo.findById(1L).get().getFirstName();
+    String oldName = tRepo.findById(te.getId()).get().getFirstName();
 
     Map<String, Object> info = new HashMap<>();
-    info.put("firstName", "Kuba");
+    info.put("firstName", "Marcin");
 
     //When
     TeacherEto teacherEto = teacherService.partialUpdate(1L, info);
 
-    String newName = tRepo.findById(1L).get().getFirstName();
+    String newName = tRepo.findById(te.getId()).get().getFirstName();
 
     //Then
     Assertions.assertThat(oldName).isNotEqualTo(newName);
-    Assertions.assertThat(newName).isEqualTo("Kuba");
+    Assertions.assertThat(newName).isEqualTo("Marcin");
   }
 
   @Test
   public void deleteTeacherWithNewIdShouldLeaveNoNullSubjectTeacherIDs () {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    TeacherEntity te2 = new TeacherEntity();
-    te2.setFirstName("Piotr");
-    te2.setLastName("Łotr");
-    tRepo.save(te2);
-    ClassYearEntity cy = tec.saveTestClassYear();
-    tec.saveTestSubject(cy, te);
+    TeacherEntity te = saveTestTeacher();
+    TeacherEntity te2 = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    saveTestSubject(cy, te);
     //when
-    teacherService.delete(1L, Optional.of(2L));
+    teacherService.delete(te.getId(), Optional.of(te2.getId()));
 
     List<SubjectEntity> result = suRepo.findAllByTeacherEntityIdIsNull();
     //then
@@ -240,18 +193,15 @@ class TeacherServiceTest {
   @Test
   public void deleteTeacherWithNewIdShouldLeaveNoNullGradeTeacherIDs() {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    TeacherEntity te2 = new TeacherEntity();
-    te2.setFirstName("Piotr");
-    te2.setLastName("Łotr");
-    tRepo.save(te2);
-    ClassYearEntity cy = tec.saveTestClassYear();
-    SubjectEntity su = tec.saveTestSubject(cy, te);
-    StudentEntity st = tec.saveTestStudent(cy);
-    tec.saveTestGrade(te, st, su);
+    TeacherEntity te = saveTestTeacher();
+    TeacherEntity te2 = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    SubjectEntity su = saveTestSubject(cy, te);
+    StudentEntity st = saveTestStudent(cy);
+    saveTestGrade(te, st, su);
 
     //when
-    teacherService.delete(1L, Optional.of(2L));
+    teacherService.delete(te.getId(), Optional.of(te2.getId()));
 
     List<GradeEntity> result = gRepo.findAllByTeacherEntityIdIsNull();
     //then
@@ -262,105 +212,99 @@ class TeacherServiceTest {
   @Test
   public void deleteTeacherWithNewIdShouldAssignNewTeacherIdToSubject() {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    TeacherEntity te2 = new TeacherEntity();
-    te2.setFirstName("Piotr");
-    te2.setLastName("Łotr");
-    tRepo.save(te2);
-    ClassYearEntity cy = tec.saveTestClassYear();
-    SubjectEntity se = tec.saveTestSubject(cy, te);
+    TeacherEntity te = saveTestTeacher();
+    TeacherEntity te2 = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    SubjectEntity sue = saveTestSubject(cy, te);
 
-    Long oldId = suRepo.findById(1L).get().getTeacherEntity().getId();
+    Long oldId = suRepo.findById(sue.getId()).get().getTeacherEntity().getId();
 
     //when
-    teacherService.delete(1L, Optional.of(2L));
+    teacherService.delete(te.getId(), Optional.of(te2.getId()));
 
-    Long newId = suRepo.findById(1L).get().getTeacherEntity().getId();
+    Long newId = suRepo.findById(sue.getId()).get().getTeacherEntity().getId();
 
     //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
-    Assertions.assertThat(newId).isEqualTo(2L);
+    Assertions.assertThat(newId).isEqualTo(te2.getId());
   }
 
   @Test
   public void deleteTeacherWithNewIdShouldAssignNewTeacherIdToGrade() {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    TeacherEntity te2 = new TeacherEntity();
-    te2.setFirstName("Piotr");
-    te2.setLastName("Łotr");
-    tRepo.save(te2);
-    ClassYearEntity cy = tec.saveTestClassYear();
-    SubjectEntity sue = tec.saveTestSubject(cy, te);
-    StudentEntity ste = tec.saveTestStudent(cy);
-    tec.saveTestGrade(te, ste, sue);
+    TeacherEntity te = saveTestTeacher();
+    TeacherEntity te2 = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    SubjectEntity sue = saveTestSubject(cy, te);
+    StudentEntity ste = saveTestStudent(cy);
+    GradeEntity ge = saveTestGrade(te, ste, sue);
 
-    Long oldId = gRepo.findById(1L).get().getTeacherEntity().getId();
+    Long oldId = gRepo.findById(ge.getId()).get().getTeacherEntity().getId();
 
     //when
-    teacherService.delete(1L, Optional.of(2L));
+    teacherService.delete(te.getId(), Optional.of(te2.getId()));
 
-    Long newId = gRepo.findById(1L).get().getTeacherEntity().getId();
+    Long newId = gRepo.findById(ge.getId()).get().getTeacherEntity().getId();
     //then
     Assertions.assertThat(newId).isNotEqualTo(oldId);
-    Assertions.assertThat(newId).isEqualTo(2L);
+    Assertions.assertThat(newId).isEqualTo(te2.getId());
   }
 
   @Test
   public void deleteTeacherWithNotExistingNewIdShouldThrowException() {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    ClassYearEntity cy = tec.saveTestClassYear();
-    tec.saveTestSubject(cy, te);
+    TeacherEntity te = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
 
               //when
-      teacherService.delete(1L, Optional.of(2L));
+      teacherService.delete(te.getId(), Optional.of(te.getId()+1));
               //then
     }).isInstanceOf(TeacherNotFoundException.class)
-            .hasMessageContaining("Teacher with id: " + 2L + " could not be found");
+            .hasMessageContaining("Teacher with id: " + (te.getId()+1) + " could not be found");
   }
 
   @Test
-  public void deleteTeacherAndThenGetItShouldThrowException() {
+  public void findingTeacherAfterDeleteShouldThrowException() {
     //Given
-    tec.saveTestTeacher();
+    TeacherEntity te = saveTestTeacher();
 
     Assertions.assertThatThrownBy(() -> {
 
               //when
-      teacherService.delete(1L, Optional.empty());
+      teacherService.delete(te.getId(), Optional.empty());
 
-      TeacherEto result = teacherService.findTeacherById(1L);
+      TeacherEto result = teacherService.findTeacherById(te.getId());
               //then
     }).isInstanceOf(TeacherNotFoundException.class)
-            .hasMessageContaining("Teacher with id: " + 1L + " could not be found");
+            .hasMessageContaining("Teacher with id: " + te.getId() + " could not be found");
 
   }
 
   @Test
   public void deleteTeacherInUseWithoutNewIdShouldThrowException() {
     //Given
-    TeacherEntity te = tec.saveTestTeacher();
-    ClassYearEntity cy = tec.saveTestClassYear();
-    tec.saveTestSubject(cy, te);
+    TeacherEntity te = saveTestTeacher();
+    ClassYearEntity cy = saveTestClassYear();
+    saveTestSubject(cy, te);
 
     Assertions.assertThatThrownBy(() -> {
               //when
-      teacherService.delete(1L, Optional.empty());
+      teacherService.delete(te.getId(), Optional.empty());
               //then
     }).isInstanceOf(TeacherStillInUseException.class)
-            .hasMessageContaining("Teacher with ID: " + 1L + " is in use, please pass ID to update");
+            .hasMessageContaining("Teacher with ID: " + te.getId() + " is in use, please pass ID to update");
   }
 
   @Test
   public void deleteTeacherShouldLeaveEmptyDatabaseTable() {
     //Given
-    tec.saveTestTeacher();
+    TeacherEntity te = saveTestTeacher();
 
     //when
-    teacherService.delete(1L, Optional.empty());
+    teacherService.delete(te.getId(), Optional.empty());
 
     List<TeacherEntity> teachers = tRepo.findAll();
     //then

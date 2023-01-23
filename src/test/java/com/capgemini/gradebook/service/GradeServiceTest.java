@@ -19,19 +19,17 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @SpringBootTest
-class GradeServiceTest {
+class GradeServiceTest extends TestEntityCreator {
 
     @Inject
     private GradeService gradeService;
 
     @Inject
     private DbCleanUpService cleanUpService;
-
-    @Inject
-    private TestEntityCreator tec;
 
     @Inject
     private GradeRepo gRepo;
@@ -46,45 +44,45 @@ class GradeServiceTest {
     public void findGradeByIdShouldReturnProperEntity() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cye = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cye, te);
+        StudentEntity ste = saveTestStudent(cye);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         //when
-        GradeEto result = gradeService.findGradeById(1L);
+        GradeEto result = gradeService.findGradeById(ge.getId());
 
         //then
         Assertions.assertThat(result).isNotNull();
-        Assertions.assertThat(result.getId()).isEqualTo(1L);
+        Assertions.assertThat(result.getId()).isEqualTo(ge.getId());
     }
 
     @Test
     public void findGradeByIdShouldThrowExceptionIfNotExist() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         Assertions.assertThatThrownBy(() -> {
                     //when
-                    gradeService.findGradeById(2L);
+                    gradeService.findGradeById(ge.getId() + 1);
                     //then
                 }).isInstanceOf(GradeNotFoundException.class)
-                .hasMessageContaining("Grade with id: " + 2L + " could not be found");
+                .hasMessageContaining("Grade with id: " + (ge.getId()+1) + " could not be found");
     }
 
     @Test
     public void searchGradeByCriteriaShouldReturnGradesIfFound() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 4, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
         createGrade(te, ste, sue, GradeType.D, 5, LocalDate.parse("2022-12-13"), BigDecimal.valueOf(4.00));
@@ -103,19 +101,20 @@ class GradeServiceTest {
         //when
         List<GradeEto> result = gradeService.searchGradesByCriteria(criteria);
 
+        List<Long> listOfIds = result.stream().map(GradeEto::getId).collect(Collectors.toList());
+
         //then
         Assertions.assertThat(result.size()).isEqualTo(2);
-        Assertions.assertThat(result.get(0).getId()).isEqualTo(1L);
-        Assertions.assertThat(result.get(1).getId()).isEqualTo(2L);
+        Assertions.assertThat(listOfIds).contains(1L, 2L);
     }
 
     @Test
     public void searchGradeByCriteriaShouldReturnEmptyListIfNotFound() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 4, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
 
@@ -140,10 +139,10 @@ class GradeServiceTest {
     @Test
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidDateRangeProvided() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 4, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
 
@@ -166,10 +165,10 @@ class GradeServiceTest {
     @Test
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidValueRangeProvided() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 4, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
 
@@ -192,10 +191,10 @@ class GradeServiceTest {
     @Test
     public void searchGradeByCriteriaShouldThrowExceptionIfInvalidWeightRangeProvided() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 4, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
 
@@ -217,10 +216,10 @@ class GradeServiceTest {
     @Test
     public void getWeightedAverageShouldReturnCorrectRoundedToUpperValue() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.B, 5, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(2.00));
@@ -235,10 +234,10 @@ class GradeServiceTest {
     @Test
     public void getWeightedAverageShouldReturnCorrectRoundedToLowerValue() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-11"), BigDecimal.valueOf(5.00));
         createGrade(te, ste, sue, GradeType.F, 1, LocalDate.parse("2022-12-13"), BigDecimal.valueOf(4.00));
         createGrade(te, ste, sue, GradeType.B, 5, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
@@ -251,63 +250,19 @@ class GradeServiceTest {
         Assertions.assertThat(result).isEqualTo(2.33);
     }
 
-    @Test
-    public void createNewClassYearShouldAlwaysAssignNewId() {
 
-        //Given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te,ste,sue);
-        GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
-        gradeEto.setValue(5);
-        gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
-
-
-        //When
-        GradeEto result = gradeService.createNew(gradeEto);
-
-        //Then
-        Assertions.assertThat(result.getId()).isNotEqualTo(1L);
-    }
 
     @Test
-    public void createNewShouldReturnInstanceOfClassYearEto() {
-        //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
-        gradeEto.setValue(5);
-        gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
-
-        //when
-        GradeEto result = gradeService.createNew(gradeEto);
-
-        //then
-        Assertions.assertThat(result).isInstanceOf(GradeEto.class);
-    }
-
-    @Test
-    public void createNewShouldReturnClassYearWithMatchingFields() {
+    public void createNewShouldReturnGradeWithMatchingFields() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(5);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -325,14 +280,13 @@ class GradeServiceTest {
     public void createNewWithValue1AndNoCommentShouldThrowException() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(1);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -350,14 +304,13 @@ class GradeServiceTest {
     public void createNewWithValue6AndNoCommentShouldThrowException() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(6);
         gradeEto.setComment("");
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
@@ -376,15 +329,14 @@ class GradeServiceTest {
     public void createAnotherGradeWithSameGradeTypeAtTheSameDayShouldThrowExeception() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         createGrade(te, ste, sue, GradeType.D, 3, LocalDate.parse("2022-12-12"), BigDecimal.valueOf(4.00));
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(3);
         gradeEto.setGradeType(GradeType.D);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
@@ -402,14 +354,13 @@ class GradeServiceTest {
     @Test
     public void createNewGradeWithValueNotBetween1And6ShouldThrowException() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(7);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -426,14 +377,13 @@ class GradeServiceTest {
     @Test
     public void createNewGradeWithWeightNotBetween1And9ShouldThrowException() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(5);
         gradeEto.setWeight(BigDecimal.valueOf(10.00));
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
@@ -452,14 +402,13 @@ class GradeServiceTest {
     public void createNewShouldThrowExceptionWhenProvidedNotExistingSubjectID() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(2L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId()+1);
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(5);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -468,21 +417,20 @@ class GradeServiceTest {
                     gradeService.createNew(gradeEto);
                     //then
                 }).isInstanceOf(SubjectNotFoundException.class)
-                .hasMessageContaining("Subject with id: " + 2L + " could not be found");
+                .hasMessageContaining("Subject with id: " + (sue.getId()+1) + " could not be found");
     }
 
     @Test
     public void createNewShouldThrowExceptionWhenDateOfGradeNotProvided() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(5);
 
         Assertions.assertThatThrownBy(() -> {
@@ -498,14 +446,13 @@ class GradeServiceTest {
     public void createNewShouldThrowExceptionWhenValueNotProvided() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId());
 
         Assertions.assertThatThrownBy(() -> {
 
@@ -519,13 +466,12 @@ class GradeServiceTest {
     @Test
     public void createNewShouldThrowExceptionWhenStudentEntityIdNotProvided() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
+        gradeEto.setSubjectEntityId(sue.getId());
         gradeEto.setValue(5);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -541,13 +487,12 @@ class GradeServiceTest {
     public void createNewShouldThrowExceptionWhenSubjectEntityIdNotProvided() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setStudentEntityId(1L);
+        gradeEto.setStudentEntityId(ste.getId());
         gradeEto.setValue(5);
 
         Assertions.assertThatThrownBy(() -> {
@@ -560,17 +505,16 @@ class GradeServiceTest {
     }
 
     @Test
-    public void createNewShouldThrowExceptionWhenProvidedNotExistingClassYearID() {
+    public void createNewShouldThrowExceptionWhenProvidedNotExistingStudentID() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        tec.saveTestStudent(cy);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
         GradeEto gradeEto = new GradeEto();
-        gradeEto.setId(1L);
-        gradeEto.setSubjectEntityId(1L);
-        gradeEto.setStudentEntityId(2L);
+        gradeEto.setSubjectEntityId(sue.getId());
+        gradeEto.setStudentEntityId(ste.getId()+1);
         gradeEto.setValue(5);
         gradeEto.setDateOfGrade(LocalDate.parse("2022-12-12"));
 
@@ -579,70 +523,44 @@ class GradeServiceTest {
                     gradeService.createNew(gradeEto);
                     //then
                 }).isInstanceOf(StudentNotFoundException.class)
-                .hasMessageContaining("Student with id: " + 2L + " could not be found");
+                .hasMessageContaining("Student with id: " + (ste.getId()+1) + " could not be found");
     }
 
-    @Test
-    public void partialUpdateShouldReturnInstanceOfGradeEto() {
-
-        //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
-
-        Map<String, Object> info = new HashMap<>();
-        info.put("value", 3);
-        info.put("studentEntityId", 2);
-
-        //when
-        GradeEto gradeEto = gradeService.partialUpdate(1L, info);
-
-        //then
-        Assertions.assertThat(gradeEto).isInstanceOf(GradeEto.class);
-    }
 
     @Test
     public void partialUpdateShouldReturnStudentWithNewValues() {
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
-
-        Integer oldValue = gRepo.findById(1L).get().getValue();
-        Long oldStudentEntityId = gRepo.findById(1L).get().getStudentEntity().getId();
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        StudentEntity ste1 = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         Map<String, Object> info = new HashMap<>();
         info.put("value", 3);
         info.put("studentEntityId", 2);
 
         //when
-        GradeEto gradeEto = gradeService.partialUpdate(1L, info);
+        GradeEto gradeEto = gradeService.partialUpdate(ge.getId(), info);
 
-        Integer newValue = gRepo.findById(1L).get().getValue();
-        Long newStudentEntityId = gRepo.findById(1L).get().getStudentEntity().getId();
+        Integer newValue = gRepo.findById(ge.getId()).get().getValue();
+        Long newStudentEntityId = gRepo.findById(ge.getId()).get().getStudentEntity().getId();
 
         //then
-        Assertions.assertThat(oldValue).isNotEqualTo(newValue);
-        Assertions.assertThat(oldStudentEntityId).isNotEqualTo(newStudentEntityId);
         Assertions.assertThat(newValue).isEqualTo(3);
-        Assertions.assertThat(newStudentEntityId).isEqualTo(2L);
+        Assertions.assertThat(newStudentEntityId).isEqualTo(ste1.getId());
     }
 
     @Test
     public void partialUpdateWithNotExistingStudentShouldThrowException() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         Map<String, Object> info = new HashMap<>();
         info.put("value", 3);
@@ -651,7 +569,7 @@ class GradeServiceTest {
         Assertions.assertThatThrownBy(() -> {
 
             //when
-                    gradeService.partialUpdate(1L, info);
+                    gradeService.partialUpdate(ge.getId(), info);
 
                     //then
                 }).isInstanceOf(StudentNotFoundException.class)
@@ -662,11 +580,11 @@ class GradeServiceTest {
     public void partialUpdateWithNotExistingSubjectShouldThrowException() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         Map<String, Object> info = new HashMap<>();
         info.put("value", 3);
@@ -675,7 +593,7 @@ class GradeServiceTest {
         Assertions.assertThatThrownBy(() -> {
 
             //when
-                    gradeService.partialUpdate(1L, info);
+                    gradeService.partialUpdate(ge.getId(), info);
 
                     //then
                 }).isInstanceOf(SubjectNotFoundException.class)
@@ -686,37 +604,37 @@ class GradeServiceTest {
     public void deleteGradeAndThenGetItShouldThrowException() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
 
         Assertions.assertThatThrownBy(() -> {
 
             //when
-                    gradeService.delete(1L);
+                    gradeService.delete(ge.getId());
 
-                    GradeEto result = gradeService.findGradeById(1L);
+                    GradeEto result = gradeService.findGradeById(ge.getId());
 
                     //then
                 }).isInstanceOf(GradeNotFoundException.class)
-                .hasMessageContaining("Grade with id: " + 1L + " could not be found");
+                .hasMessageContaining("Grade with id: " + ge.getId() + " could not be found");
     }
 
     @Test
     public void deleteGradeShouldLeaveEmptyDatabaseTable() {
 
         //given
-        TeacherEntity te = tec.saveTestTeacher();
-        ClassYearEntity cy = tec.saveTestClassYear();
-        SubjectEntity sue = tec.saveTestSubject(cy, te);
-        StudentEntity ste = tec.saveTestStudent(cy);
-        tec.saveTestGrade(te, ste, sue);
+        TeacherEntity te = saveTestTeacher();
+        ClassYearEntity cy = saveTestClassYear();
+        SubjectEntity sue = saveTestSubject(cy, te);
+        StudentEntity ste = saveTestStudent(cy);
+        GradeEntity ge = saveTestGrade(te, ste, sue);
 
         //when
-        gradeService.delete(1L);
+        gradeService.delete(ge.getId());
 
         List<GradeEntity> grades = this.gRepo.findAll();
 

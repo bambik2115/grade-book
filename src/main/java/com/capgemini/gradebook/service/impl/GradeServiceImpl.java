@@ -58,13 +58,13 @@ public class GradeServiceImpl implements GradeService {
     @Override
     public List<GradeEto> searchGradesByCriteria(GradeSearchCriteria criteria) {
 
-        if(criteria.getCreatedDateTo().isBefore(criteria.getCreatedDateFrom())) {
+        if(criteria.getCreatedDateFrom() != null && criteria.getCreatedDateTo() != null && criteria.getCreatedDateTo().isBefore(criteria.getCreatedDateFrom())) {
             throw new InvalidRangeProvidedException("Grade creation date To can't be before From");
         }
-        if(criteria.getValueTo() < criteria.getValueFrom()) {
+        if(criteria.getValueFrom() != null && criteria.getValueTo() != null && criteria.getValueTo() < criteria.getValueFrom()) {
             throw new InvalidRangeProvidedException(("Grade value To can't be lower than From"));
         }
-        if(criteria.getWeightTo().compareTo(criteria.getWeightFrom()) < 0) {
+        if(criteria.getWeightFrom() != null && criteria.getWeightTo() != null && criteria.getWeightTo().compareTo(criteria.getWeightFrom()) < 0) {
             throw new InvalidRangeProvidedException(("Grade weight To can't be lower than From"));
         }
 
