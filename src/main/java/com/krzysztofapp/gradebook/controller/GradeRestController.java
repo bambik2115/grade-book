@@ -3,7 +3,7 @@ package com.krzysztofapp.gradebook.controller;
 
 import com.krzysztofapp.gradebook.domain.GradeEto;
 import com.krzysztofapp.gradebook.domain.GradeSearchCriteria;
-import com.capgemini.gradebook.service.GradeService;
+import com.krzysztofapp.gradebook.service.GradeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

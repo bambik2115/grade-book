@@ -2,7 +2,7 @@ package com.krzysztofapp.gradebook.controller;
 
 import com.krzysztofapp.gradebook.domain.GradeContext;
 import com.krzysztofapp.gradebook.domain.StudentEto;
-import com.capgemini.gradebook.service.StudentService;
+import com.krzysztofapp.gradebook.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,8 +1,8 @@
 package com.krzysztofapp.gradebook.controller;
 
 import com.krzysztofapp.gradebook.domain.TeacherEto;
-import com.capgemini.gradebook.service.SubjectService;
-import com.capgemini.gradebook.service.TeacherService;
+import com.krzysztofapp.gradebook.service.SubjectService;
+import com.krzysztofapp.gradebook.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

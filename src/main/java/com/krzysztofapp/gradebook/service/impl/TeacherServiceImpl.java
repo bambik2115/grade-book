@@ -10,7 +10,7 @@ import com.krzysztofapp.gradebook.persistence.entity.TeacherEntity;
 import com.krzysztofapp.gradebook.persistence.repo.GradeRepo;
 import com.krzysztofapp.gradebook.persistence.repo.SubjectRepo;
 import com.krzysztofapp.gradebook.persistence.repo.TeacherRepo;
-import com.capgemini.gradebook.service.TeacherService;
+import com.krzysztofapp.gradebook.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

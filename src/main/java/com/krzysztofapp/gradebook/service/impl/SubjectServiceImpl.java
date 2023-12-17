@@ -12,7 +12,7 @@ import com.krzysztofapp.gradebook.persistence.entity.utils.SubjectUtils;
 import com.krzysztofapp.gradebook.persistence.repo.ClassYearRepo;
 import com.krzysztofapp.gradebook.persistence.repo.SubjectRepo;
 import com.krzysztofapp.gradebook.persistence.repo.TeacherRepo;
-import com.capgemini.gradebook.service.SubjectService;
+import com.krzysztofapp.gradebook.service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
